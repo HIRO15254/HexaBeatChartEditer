@@ -70,8 +70,6 @@
     <Compile Include="Events\HighSpeedChangeEvent.cs" />
     <Compile Include="Events\TimeSignatureChangeEvent.cs" />
     <Compile Include="NoteCollection.cs" />
-    <Compile Include="Notes\Air.cs" />
-    <Compile Include="Notes\AirAction.cs" />
     <Compile Include="Notes\Damage.cs" />
     <Compile Include="Notes\ExTap.cs" />
     <Compile Include="Notes\Flick.cs" />
@@ -79,7 +77,6 @@
     <Compile Include="Notes\LongNoteBase.cs" />
     <Compile Include="Notes\NoteBase.cs" />
     <Compile Include="Notes\ShortNoteBase.cs" />
-    <Compile Include="Notes\Slide.cs" />
     <Compile Include="Notes\Tap.cs" />
     <Compile Include="Notes\TappableBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -33,13 +33,5 @@ namespace Ched.Drawing
         public GradientColor DamageColor { get; set; }
         public GradientColor HoldBackgroundColor { get; set; }
         public GradientColor HoldColor { get; set; }
-        public GradientColor SlideBackgroundColor { get; set; }
-        public GradientColor SlideColor { get; set; }
-        public Color SlideLineColor { get; set; }
-        public GradientColor AirActionColor { get; set; }
-        public Color AirUpColor { get; set; }
-        public Color AirDownColor { get; set; }
-        public Color AirHoldLineColor { get; set; }
-        public GradientColor AirStepColor { get; set; }
     }
 }

@@ -21,15 +21,10 @@ namespace Ched.Core
         [Newtonsoft.Json.JsonProperty]
         private List<Hold> holds;
         [Newtonsoft.Json.JsonProperty]
-        private List<Slide> slides;
-        [Newtonsoft.Json.JsonProperty]
         private List<Flick> flicks;
         [Newtonsoft.Json.JsonProperty]
         private List<Damage> damages;
         [Newtonsoft.Json.JsonProperty]
-        private List<Air> airs;
-        [Newtonsoft.Json.JsonProperty]
-        private List<AirAction> airActions;
 
         public List<Tap> Taps
         {
@@ -49,24 +44,6 @@ namespace Ched.Core
             set { holds = value; }
         }
 
-        public List<Slide> Slides
-        {
-            get { return slides; }
-            set { slides = value; }
-        }
-
-        public List<Air> Airs
-        {
-            get { return airs; }
-            set { airs = value; }
-        }
-
-        public List<AirAction> AirActions
-        {
-            get { return airActions; }
-            set { airActions = value; }
-        }
-
         public List<Flick> Flicks
         {
             get { return flicks; }
@@ -84,9 +61,6 @@ namespace Ched.Core
             Taps = new List<Tap>();
             ExTaps = new List<ExTap>();
             Holds = new List<Hold>();
-            Slides = new List<Slide>();
-            Airs = new List<Air>();
-            AirActions = new List<AirAction>();
             Flicks = new List<Flick>();
             Damages = new List<Damage>();
         }
@@ -96,9 +70,6 @@ namespace Ched.Core
             Taps = collection.Taps.ToList();
             ExTaps = collection.ExTaps.ToList();
             Holds = collection.Holds.ToList();
-            Slides = collection.Slides.ToList();
-            Airs = collection.Airs.ToList();
-            AirActions = collection.AirActions.ToList();
             Flicks = collection.Flicks.ToList();
             Damages = collection.Damages.ToList();
         }
@@ -118,16 +89,6 @@ namespace Ched.Core
                 hold.StartTick = (int)(hold.StartTick * factor);
                 hold.Duration = (int)(hold.Duration * factor);
             }
-
-            foreach (var slide in Slides)
-            {
-                slide.StartTick = (int)(slide.StartTick * factor);
-                foreach (var step in slide.StepNotes)
-                    step.TickOffset = (int)(step.TickOffset * factor);
-            }
-
-            foreach (var action in AirActions.SelectMany(p => p.ActionNotes))
-                action.Offset = (int)(action.Offset * factor);
         }
     }
 }

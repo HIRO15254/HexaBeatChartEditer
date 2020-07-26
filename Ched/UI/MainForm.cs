@@ -54,7 +54,7 @@ namespace Ched.UI
                 NoteView.Editable = CanEdit;
                 NoteView.LaneBorderLightColor = isPreviewMode ? Color.FromArgb(40, 40, 40) : Color.FromArgb(60, 60, 60);
                 NoteView.LaneBorderDarkColor = isPreviewMode ? Color.FromArgb(10, 10, 10) : Color.FromArgb(30, 30, 30);
-                NoteView.UnitLaneWidth = isPreviewMode ? 4 : ApplicationSettings.Default.UnitLaneWidth;
+                NoteView.UnitLaneWidth = isPreviewMode ? 42 : ApplicationSettings.Default.UnitLaneWidth;
                 NoteView.ShortNoteHeight = isPreviewMode ? 4 : 5;
                 NoteView.UnitBeatHeight = isPreviewMode ? 48 : ApplicationSettings.Default.UnitBeatHeight;
                 UpdateThumbHeight();
@@ -88,7 +88,6 @@ namespace Ched.UI
                 Dock = DockStyle.Fill,
                 UnitBeatHeight = ApplicationSettings.Default.UnitBeatHeight,
                 UnitLaneWidth = ApplicationSettings.Default.UnitLaneWidth,
-                InsertAirWithAirAction = ApplicationSettings.Default.InsertAirWithAirAction
             };
 
             PreviewManager = new SoundPreviewManager(NoteView);
@@ -450,7 +449,6 @@ namespace Ched.UI
             {
                 var item = s as MenuItem;
                 item.Checked = !item.Checked;
-                NoteView.InsertAirWithAirAction = item.Checked;
                 ApplicationSettings.Default.InsertAirWithAirAction = item.Checked;
             })
             {
@@ -847,26 +845,6 @@ namespace Ched.UI
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
-            var slideButton = new ToolStripButton("SLIDE", Resources.SlideIcon, (s, e) =>
-            {
-                noteView.NewNoteType = NoteType.Slide;
-                noteView.IsNewSlideStepVisible = false;
-            })
-            {
-                DisplayStyle = ToolStripItemDisplayStyle.Image
-            };
-            var slideStepButton = new ToolStripButton(MainFormStrings.SlideStep, Resources.SlideStepIcon, (s, e) =>
-            {
-                noteView.NewNoteType = NoteType.Slide;
-                noteView.IsNewSlideStepVisible = true;
-            })
-            {
-                DisplayStyle = ToolStripItemDisplayStyle.Image
-            };
-            var airActionButton = new ToolStripButton("AIR-ACTION", Resources.AirActionIcon, (s, e) => noteView.NewNoteType = NoteType.AirAction)
-            {
-                DisplayStyle = ToolStripItemDisplayStyle.Image
-            };
             var flickButton = new ToolStripButton("FLICK", Resources.FlickIcon, (s, e) => noteView.NewNoteType = NoteType.Flick)
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
@@ -875,23 +853,6 @@ namespace Ched.UI
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
-
-            var airKind = new CheckableToolStripSplitButton()
-            {
-                DisplayStyle = ToolStripItemDisplayStyle.Image
-            };
-            airKind.Text = "AIR";
-            airKind.Click += (s, e) => noteView.NewNoteType = NoteType.Air;
-            airKind.DropDown.Items.AddRange(new ToolStripItem[]
-            {
-                new ToolStripMenuItem(MainFormStrings.AirUp, Resources.AirUpIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Up, HorizontalAirDirection.Center)),
-                new ToolStripMenuItem(MainFormStrings.AirLeftUp, Resources.AirLeftUpIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Up, HorizontalAirDirection.Left)),
-                new ToolStripMenuItem(MainFormStrings.AirRightUp, Resources.AirRightUpIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Up, HorizontalAirDirection.Right)),
-                new ToolStripMenuItem(MainFormStrings.AirDown, Resources.AirDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Center)),
-                new ToolStripMenuItem(MainFormStrings.AirLeftDown, Resources.AirLeftDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Left)),
-                new ToolStripMenuItem(MainFormStrings.AirRightDown, Resources.AirRightDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Right))
-            });
-            airKind.Image = Resources.AirUpIcon;
 
             var quantizeTicks = new int[]
             {
@@ -929,35 +890,13 @@ namespace Ched.UI
                 tapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Tap);
                 exTapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.ExTap);
                 holdButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Hold);
-                slideButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Slide) && !noteView.IsNewSlideStepVisible;
-                slideStepButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Slide) && noteView.IsNewSlideStepVisible;
-                airKind.Checked = noteView.NewNoteType.HasFlag(NoteType.Air);
-                airActionButton.Checked = noteView.NewNoteType.HasFlag(NoteType.AirAction);
                 flickButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Flick);
                 damageButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Damage);
             };
 
-            noteView.AirDirectionChanged += (s, e) =>
-            {
-                switch (noteView.AirDirection.HorizontalDirection)
-                {
-                    case HorizontalAirDirection.Center:
-                        airKind.Image = noteView.AirDirection.VerticalDirection == VerticalAirDirection.Up ? Resources.AirUpIcon : Resources.AirDownIcon;
-                        break;
-
-                    case HorizontalAirDirection.Left:
-                        airKind.Image = noteView.AirDirection.VerticalDirection == VerticalAirDirection.Up ? Resources.AirLeftUpIcon : Resources.AirLeftDownIcon;
-                        break;
-
-                    case HorizontalAirDirection.Right:
-                        airKind.Image = noteView.AirDirection.VerticalDirection == VerticalAirDirection.Up ? Resources.AirRightUpIcon : Resources.AirRightDownIcon;
-                        break;
-                }
-            };
-
             return new ToolStrip(new ToolStripItem[]
             {
-                tapButton, exTapButton, holdButton, slideButton, slideStepButton, airKind, airActionButton, flickButton, damageButton,
+                tapButton, exTapButton, holdButton, flickButton, damageButton,
                 quantizeComboBox
             });
         }

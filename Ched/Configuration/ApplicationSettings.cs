@@ -18,7 +18,7 @@ namespace Ched.Configuration
         public static ApplicationSettings Default => defaultInstance;
 
         [UserScopedSetting]
-        [DefaultSettingValue("12")]
+        [DefaultSettingValue("48")]
         public int UnitLaneWidth
         {
             get { return ((int)(this["UnitLaneWidth"])); }

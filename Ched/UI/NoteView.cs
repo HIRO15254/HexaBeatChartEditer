@@ -45,8 +45,6 @@ namespace Ched.UI
         private int currentTick = 0;
         private SelectionRange selectedRange = SelectionRange.Empty;
         private NoteType newNoteType = NoteType.Tap;
-        private AirDirection airDirection = new AirDirection(VerticalAirDirection.Up, HorizontalAirDirection.Center);
-        private bool isNewSlideStepVisible = true;
 
         /// <summary>
         /// 小節の区切り線の色を設定します。
@@ -285,42 +283,6 @@ namespace Ched.UI
         }
 
         /// <summary>
-        /// 新たに追加するSlideのStepノートの可視性を設定します。
-        /// </summary>
-        public bool IsNewSlideStepVisible
-        {
-            get { return isNewSlideStepVisible; }
-            set
-            {
-                isNewSlideStepVisible = value;
-                NewNoteTypeChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// 追加するAIRの方向を設定します。
-        /// </summary>
-        public AirDirection AirDirection
-        {
-            get { return airDirection; }
-            set
-            {
-                airDirection = value;
-                AirDirectionChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// AIR-ACTION挿入時に未追加のAIRを追加するかどうか指定します。
-        /// </summary>
-        public bool InsertAirWithAirAction { get; set; }
-
-        /// <summary>
-        /// ノート幅に対するノート端の当たり判定に含める割合を設定します。
-        /// </summary>
-        public float EdgeHitWidthRate { get; set; } = 0.2f;
-
-        /// <summary>
         /// ノート端の当たり判定幅の下限を取得します。
         /// </summary>
         public float MinimumEdgeHitWidth => UnitLaneWidth * 0.4f;
@@ -362,14 +324,6 @@ namespace Ched.UI
                 DamageColor = new GradientColor(Color.FromArgb(8, 8, 116), Color.FromArgb(22, 40, 180)),
                 HoldColor = new GradientColor(Color.FromArgb(196, 86, 0), Color.FromArgb(244, 156, 102)),
                 HoldBackgroundColor = new GradientColor(Color.FromArgb(196, 166, 44, 168), Color.FromArgb(196, 216, 216, 0)),
-                SlideColor = new GradientColor(Color.FromArgb(0, 16, 138), Color.FromArgb(86, 106, 255)),
-                SlideLineColor = Color.FromArgb(196, 0, 214, 192),
-                SlideBackgroundColor = new GradientColor(Color.FromArgb(196, 166, 44, 168), Color.FromArgb(196, 0, 164, 146)),
-                AirUpColor = Color.FromArgb(28, 206, 22),
-                AirDownColor = Color.FromArgb(192, 21, 216),
-                AirActionColor = new GradientColor(Color.FromArgb(146, 0, 192), Color.FromArgb(212, 92, 255)),
-                AirHoldLineColor = Color.FromArgb(216, 0, 196, 0),
-                AirStepColor = new GradientColor(Color.FromArgb(6, 180, 10), Color.FromArgb(80, 224, 64))
             };
 
             var mouseDown = this.MouseDownAsObservable();
@@ -385,10 +339,6 @@ namespace Ched.UI
                     int tailTick = TailTick;
                     Func<int, bool> visibleTick = t => t >= HeadTick && t <= tailTick;
 
-                    var airActions = Notes.AirActions.Reverse()
-                        .SelectMany(q => q.ActionNotes.Where(r => visibleTick(q.StartTick + r.Offset)))
-                        .Select(q => GetClickableRectFromNotePosition(q.ParentNote.StartTick + q.Offset, q.ParentNote.ParentNote.LaneIndex, q.ParentNote.ParentNote.Width));
-
                     var shortNotes = Enumerable.Empty<TappableBase>()
                         .Concat(Notes.Damages.Reverse())
                         .Concat(Notes.ExTaps.Reverse())
@@ -397,27 +347,19 @@ namespace Ched.UI
                         .Where(q => visibleTick(q.Tick))
                         .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
 
-                    var slides = Notes.Slides.Reverse()
-                        .SelectMany(q => q.StepNotes.OrderByDescending(r => r.TickOffset).Concat(new LongNoteTapBase[] { q.StartNote }))
-                        .Where(q => visibleTick(q.Tick))
-                        .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
 
-                    foreach (RectangleF rect in airActions)
+                    foreach (RectangleF rect in shortNotes)
                     {
                         if (!rect.Contains(pos)) continue;
-                        Cursor = Cursors.SizeNS;
+                        Cursor = Cursors.SizeAll;
                         return;
                     }
-
-                    foreach (RectangleF rect in shortNotes.Concat(slides))
+                    foreach (RectangleF rect in shortNotes)
                     {
                         if (!rect.Contains(pos)) continue;
-                        RectangleF left = rect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth);
-                        RectangleF right = rect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth);
-                        Cursor = (left.Contains(pos) || right.Contains(pos)) ? Cursors.SizeWE : Cursors.SizeAll;
+                        Cursor = Cursors.SizeAll;
                         return;
                     }
-
                     foreach (var hold in Notes.Holds.Reverse())
                     {
                         if (GetClickableRectFromNotePosition(hold.EndNote.Tick, hold.LaneIndex, hold.Width).Contains(pos))
@@ -428,9 +370,7 @@ namespace Ched.UI
 
                         RectangleF rect = GetClickableRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
                         if (!rect.Contains(pos)) continue;
-                        RectangleF left = rect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth);
-                        RectangleF right = rect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth);
-                        Cursor = (left.Contains(pos) || right.Contains(pos)) ? Cursors.SizeWE : Cursors.SizeAll;
+                        Cursor = Cursors.SizeAll;
                         return;
                     }
 
@@ -471,41 +411,6 @@ namespace Ched.UI
                     // そもそも描画領域外であれば何もしない
                     RectangleF scoreRect = new RectangleF(0, GetYPositionFromTick(HeadTick), LaneWidth, GetYPositionFromTick(TailTick) - GetYPositionFromTick(HeadTick));
                     if (!scoreRect.Contains(scorePos)) return Observable.Empty<MouseEventArgs>();
-
-                    Func<AirAction.ActionNote, IObservable<MouseEventArgs>> actionNoteHandler = action =>
-                    {
-                        var offsets = new HashSet<int>(action.ParentNote.ActionNotes.Select(q => q.Offset));
-                        offsets.Remove(action.Offset);
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                int offset = GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)) - action.ParentNote.ParentNote.Tick;
-                                if (offset <= 0 || offsets.Contains(offset)) return;
-                                action.Offset = offset;
-                                Cursor.Current = Cursors.SizeNS;
-                            }).Finally(() => Cursor.Current = Cursors.Default);
-                    };
-
-                    // AIR-ACTION
-                    foreach (var note in Notes.AirActions.Reverse())
-                    {
-                        foreach (var action in note.ActionNotes)
-                        {
-                            RectangleF noteRect = GetClickableRectFromNotePosition(note.ParentNote.Tick + action.Offset, note.ParentNote.LaneIndex, note.ParentNote.Width);
-                            if (noteRect.Contains(scorePos))
-                            {
-                                int beforeOffset = action.Offset;
-                                return actionNoteHandler(action)
-                                    .Finally(() =>
-                                    {
-                                        if (beforeOffset == action.Offset) return;
-                                        OperationManager.Push(new ChangeAirActionOffsetOperation(action, beforeOffset, action.Offset));
-                                    });
-                            }
-                        }
-                    }
 
                     Func<TappableBase, IObservable<MouseEventArgs>> moveTappableNoteHandler = note =>
                     {
@@ -572,31 +477,6 @@ namespace Ched.UI
                     Func<TappableBase, IObservable<MouseEventArgs>> shortNoteHandler = note =>
                     {
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
-                        // ノートの左側
-                        if (rect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                        {
-                            var beforePos = new ChangeShortNoteWidthOperation.NotePosition(note.LaneIndex, note.Width);
-                            return tappableNoteLeftThumbHandler(note)
-                                .Finally(() =>
-                                {
-                                    var afterPos = new ChangeShortNoteWidthOperation.NotePosition(note.LaneIndex, note.Width);
-                                    if (beforePos == afterPos) return;
-                                    OperationManager.Push(new ChangeShortNoteWidthOperation(note, beforePos, afterPos));
-                                });
-                        }
-
-                        // ノートの右側
-                        if (rect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                        {
-                            var beforePos = new ChangeShortNoteWidthOperation.NotePosition(note.LaneIndex, note.Width);
-                            return tappableNoteRightThumbHandler(note)
-                                .Finally(() =>
-                                {
-                                    var afterPos = new ChangeShortNoteWidthOperation.NotePosition(note.LaneIndex, note.Width);
-                                    if (beforePos == afterPos) return;
-                                    OperationManager.Push(new ChangeShortNoteWidthOperation(note, beforePos, afterPos));
-                                });
-                        }
 
                         // ノート本体
                         if (rect.Contains(scorePos))
@@ -625,197 +505,7 @@ namespace Ched.UI
                             })
                             .Finally(() => Cursor.Current = Cursors.Default);
                     };
-
-                    Func<Slide.StepTap, IObservable<MouseEventArgs>> leftSlideStepNoteHandler = step =>
-                    {
-                        var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                int laneIndexOffset = beforeStepPos.LaneIndexOffset + xdiff;
-                                int widthChange = beforeStepPos.WidthChange - xdiff;
-                                laneIndexOffset = Math.Min(beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - 1, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
-                                widthChange = Math.Min(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 1, widthChange));
-                                step.SetPosition(laneIndexOffset, widthChange);
-                                Cursor.Current = Cursors.SizeWE;
-                            })
-                            .Finally(() =>
-                            {
-                                Cursor.Current = Cursors.Default;
-                                var afterPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                                if (beforeStepPos == afterPos) return;
-                                OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
-                            });
-                    };
-
-                    Func<Slide.StepTap, IObservable<MouseEventArgs>> rightSlideStepNoteHandler = step =>
-                    {
-                        var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                int widthChange = beforeStepPos.WidthChange + xdiff;
-                                step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 1, widthChange));
-                                Cursor.Current = Cursors.SizeWE;
-                            })
-                            .Finally(() =>
-                            {
-                                Cursor.Current = Cursors.Default;
-                                var afterPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                                if (beforeStepPos == afterPos) return;
-                                OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
-                            });
-                    };
-
-                    // 挿入時のハンドラにも流用するのでFinallyつけられない
-                    Func<Slide.StepTap, IObservable<MouseEventArgs>> moveSlideStepNoteHandler = step =>
-                    {
-                        var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                        var offsets = new HashSet<int>(step.ParentNote.StepNotes.Select(q => q.TickOffset));
-                        bool isMaxOffsetStep = step.TickOffset == offsets.Max();
-                        offsets.Remove(step.TickOffset);
-                        int maxOffset = offsets.OrderByDescending(q => q).FirstOrDefault();
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                int offset = GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)) - step.ParentNote.StartTick;
-                                int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                int laneIndexOffset = beforeStepPos.LaneIndexOffset + xdiff;
-                                step.LaneIndexOffset = Math.Min(Constants.LanesCount - step.Width - step.ParentNote.StartLaneIndex, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
-                                // 最終Step以降に移動はさせないし同じTickに置かせもしない
-                                if ((!isMaxOffsetStep && offset > maxOffset) || offsets.Contains(offset) || offset <= 0) return;
-                                // 最終Stepは手前のStepより前に動かさない……
-                                if (isMaxOffsetStep && offset <= maxOffset) return;
-                                step.TickOffset = offset;
-                                Cursor.Current = Cursors.SizeAll;
-                            });
-                    };
-
-                    Func<Slide, IObservable<MouseEventArgs>> slideHandler = slide =>
-                    {
-                        foreach (var step in slide.StepNotes.OrderByDescending(q => q.TickOffset))
-                        {
-                            RectangleF stepRect = GetClickableRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
-                            var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-
-                            if (stepRect.Contains(scorePos))
-                            {
-                                if (stepRect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                                {
-                                    return leftSlideStepNoteHandler(step);
-                                }
-
-                                if (stepRect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                                {
-                                    return rightSlideStepNoteHandler(step);
-                                }
-
-                                if (stepRect.Contains(scorePos))
-                                {
-                                    return moveSlideStepNoteHandler(step)
-                                        .Finally(() =>
-                                        {
-                                            Cursor.Current = Cursors.Default;
-                                            var afterPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                                            if (beforeStepPos == afterPos) return;
-                                            OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
-                                        });
-                                }
-                            }
-                        }
-
-                        RectangleF startRect = GetClickableRectFromNotePosition(slide.StartNote.Tick, slide.StartNote.LaneIndex, slide.StartNote.Width);
-
-                        int leftStepLaneIndexOffset = Math.Min(0, slide.StepNotes.Min(q => q.LaneIndexOffset));
-                        int rightStepLaneIndexOffset = Math.Max(0, slide.StepNotes.Max(q => q.LaneIndexOffset + q.WidthChange)); // 最も右にあるStepNoteの右端に対するStartNoteの右端からのオフセット
-                        int minWidthChange = Math.Min(0, slide.StepNotes.Min(q => q.WidthChange));
-
-                        var beforePos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
-                        if (startRect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                        {
-                            return mouseMove
-                                .TakeUntil(mouseUp)
-                                .Do(q =>
-                                {
-                                    var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                    int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    xdiff = Math.Min(beforePos.StartWidth + minWidthChange - 1, Math.Max(-beforePos.StartLaneIndex - leftStepLaneIndexOffset, xdiff));
-                                    int width = beforePos.StartWidth - xdiff;
-                                    int laneIndex = beforePos.StartLaneIndex + xdiff;
-                                    // clamp
-                                    width = Math.Min(Constants.LanesCount - slide.StartLaneIndex - leftStepLaneIndexOffset, Math.Max(-minWidthChange + 1, width));
-                                    laneIndex = Math.Min(Constants.LanesCount - rightStepLaneIndexOffset, Math.Max(-leftStepLaneIndexOffset - beforePos.StartLaneIndex, laneIndex));
-                                    slide.SetPosition(laneIndex, width);
-                                    Cursor.Current = Cursors.SizeWE;
-                                })
-                                .Finally(() =>
-                                {
-                                    Cursor.Current = Cursors.Default;
-                                    LastWidth = slide.StartWidth;
-                                    var afterPos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
-                                    if (beforePos == afterPos) return;
-                                    OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
-                                });
-                        }
-
-                        if (startRect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                        {
-                            return mouseMove
-                                .TakeUntil(mouseUp)
-                                .Do(q =>
-                                {
-                                    var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                    int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    int width = beforePos.StartWidth + xdiff;
-                                    slide.StartWidth = Math.Min(Constants.LanesCount - slide.StartLaneIndex - rightStepLaneIndexOffset, Math.Max(-minWidthChange + 1, width));
-                                    Cursor.Current = Cursors.SizeWE;
-                                })
-                                .Finally(() =>
-                                {
-                                    Cursor.Current = Cursors.Default;
-                                    LastWidth = slide.StartWidth;
-                                    var afterPos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
-                                    if (beforePos == afterPos) return;
-                                    OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
-                                });
-                        }
-
-                        if (startRect.Contains(scorePos))
-                        {
-                            int beforeLaneIndex = slide.StartNote.LaneIndex;
-                            return mouseMove
-                                .TakeUntil(mouseUp)
-                                .Do(q =>
-                                {
-                                    var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                    slide.StartTick = Math.Max(GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)), 0);
-                                    int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    int laneIndex = beforeLaneIndex + xdiff;
-                                    slide.StartLaneIndex = Math.Min(Constants.LanesCount - slide.StartWidth - rightStepLaneIndexOffset, Math.Max(-leftStepLaneIndexOffset, laneIndex));
-                                    Cursor.Current = Cursors.SizeAll;
-                                })
-                                .Finally(() =>
-                                {
-                                    Cursor.Current = Cursors.Default;
-                                    LastWidth = slide.StartWidth;
-                                    var afterPos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
-                                    if (beforePos == afterPos) return;
-                                    OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
-                                });
-                        }
-
-                        return null;
-                    };
+                   
 
                     Func<Hold, IObservable<MouseEventArgs>> holdHandler = hold =>
                     {
@@ -834,53 +524,6 @@ namespace Ched.UI
                         RectangleF startRect = GetClickableRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
 
                         var beforePos = new MoveHoldOperation.NotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
-                        if (startRect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                        {
-                            return mouseMove
-                                .TakeUntil(mouseUp)
-                                .Do(q =>
-                                {
-                                    var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                    int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    xdiff = Math.Min(beforePos.Width - 1, Math.Max(-beforePos.LaneIndex, xdiff));
-                                    int width = beforePos.Width - xdiff;
-                                    int laneIndex = beforePos.LaneIndex + xdiff;
-                                    width = Math.Min(Constants.LanesCount - laneIndex, Math.Max(1, width));
-                                    laneIndex = Math.Min(Constants.LanesCount - width, Math.Max(0, laneIndex));
-                                    hold.SetPosition(laneIndex, width);
-                                    Cursor.Current = Cursors.SizeWE;
-                                })
-                                .Finally(() =>
-                                {
-                                    Cursor.Current = Cursors.Default;
-                                    LastWidth = hold.Width;
-                                    var afterPos = new MoveHoldOperation.NotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
-                                    if (beforePos == afterPos) return;
-                                    OperationManager.Push(new MoveHoldOperation(hold, beforePos, afterPos));
-                                });
-                        }
-
-                        if (startRect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                        {
-                            return mouseMove
-                                .TakeUntil(mouseUp)
-                                .Do(q =>
-                                {
-                                    var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                    int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    int width = beforePos.Width + xdiff;
-                                    hold.Width = Math.Min(Constants.LanesCount - hold.LaneIndex, Math.Max(1, width));
-                                    Cursor.Current = Cursors.SizeWE;
-                                })
-                                .Finally(() =>
-                                {
-                                    Cursor.Current = Cursors.Default;
-                                    LastWidth = hold.Width;
-                                    var afterPos = new MoveHoldOperation.NotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
-                                    if (beforePos == afterPos) return;
-                                    OperationManager.Push(new MoveHoldOperation(hold, beforePos, afterPos));
-                                });
-                        }
 
                         if (startRect.Contains(scorePos))
                         {
@@ -934,12 +577,6 @@ namespace Ched.UI
                             if (subscription != null) return subscription;
                         }
 
-                        foreach (var note in Notes.Slides.Reverse().Where(q => q.StartTick <= tailTick && q.StartTick + q.GetDuration() >= HeadTick))
-                        {
-                            var subscription = slideHandler(note);
-                            if (subscription != null) return subscription;
-                        }
-
                         foreach (var note in Notes.Holds.Reverse().Where(q => q.StartTick <= tailTick && q.StartTick + q.GetDuration() >= HeadTick))
                         {
                             var subscription = holdHandler(note);
@@ -949,109 +586,8 @@ namespace Ched.UI
                         return null;
                     };
 
-                    // AIR系編集時
-                    if ((NoteType.Air | NoteType.AirAction).HasFlag(NewNoteType))
-                    {
-                        var airables = Enumerable.Empty<IAirable>()
-                            .Concat(Notes.Damages.Reverse())
-                            .Concat(Notes.ExTaps.Reverse())
-                            .Concat(Notes.Taps.Reverse())
-                            .Concat(Notes.Flicks.Reverse())
-                            .Concat(Notes.Slides.Reverse().Select(q => q.StepNotes.OrderByDescending(r => r.TickOffset).First()))
-                            .Concat(Notes.Holds.Reverse().Select(q => q.EndNote));
-
-                        Func<IObservable<MouseEventArgs>> addAirHandler = () =>
-                        {
-                            foreach (var note in airables)
-                            {
-                                RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
-                                if (rect.Contains(scorePos))
-                                {
-                                    // 既に配置されていれば追加しない
-                                    if (Notes.GetReferencedAir(note).Count() > 0) break;
-                                    return mouseMove
-                                        .TakeUntil(mouseUp)
-                                        .Count()
-                                        .Zip(mouseUp, (q, r) => new { Args = r, Count = q })
-                                        .Where(q => q.Count == 0)
-                                        .Select(q => q.Args)
-                                        .Do(q =>
-                                        {
-                                            var air = new Air(note)
-                                            {
-                                                VerticalDirection = AirDirection.VerticalDirection,
-                                                HorizontalDirection = AirDirection.HorizontalDirection
-                                            };
-                                            Notes.Add(air);
-                                            Invalidate();
-                                            OperationManager.Push(new InsertAirOperation(Notes, air));
-                                        });
-                                }
-                            }
-                            return null;
-                        };
-
-                        Func<IObservable<MouseEventArgs>> addAirActionHandler = () =>
-                        {
-                            foreach (var note in Notes.AirActions.Reverse())
-                            {
-                                var size = new SizeF(UnitLaneWidth / 2, GetYPositionFromTick(note.ActionNotes.Max(q => q.Offset)));
-                                var rect = new RectangleF(
-                                    (UnitLaneWidth + BorderThickness) * (note.ParentNote.LaneIndex + note.ParentNote.Width / 2f) - size.Width / 2,
-                                    GetYPositionFromTick(note.ParentNote.Tick),
-                                    size.Width, size.Height);
-                                if (rect.Contains(scorePos))
-                                {
-                                    int offset = GetQuantizedTick(GetTickFromYPosition(scorePos.Y)) - note.ParentNote.Tick;
-                                    if (offset > 0 && !note.ActionNotes.Any(q => q.Offset == offset))
-                                    {
-                                        var action = new AirAction.ActionNote(note) { Offset = offset };
-                                        note.ActionNotes.Add(action);
-                                        Invalidate();
-                                        return actionNoteHandler(action)
-                                            .Finally(() => OperationManager.Push(new InsertAirActionNoteOperation(note, action)));
-                                    }
-                                }
-                            }
-
-                            foreach (var note in airables)
-                            {
-                                RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
-                                if (rect.Contains(scorePos))
-                                {
-                                    // 既に配置されていれば追加しない
-                                    if (Notes.GetReferencedAirAction(note).Count() > 0) break;
-                                    var airAction = new AirAction(note);
-                                    var action = new AirAction.ActionNote(airAction) { Offset = (int)QuantizeTick };
-                                    airAction.ActionNotes.Add(action);
-                                    var op = new InsertAirActionOperation(Notes, airAction);
-                                    IOperation comp = InsertAirWithAirAction && Notes.GetReferencedAir(note).Count() == 0 ? (IOperation)new CompositeOperation("AIR, AIR-ACTIONの追加", new IOperation[] { new InsertAirOperation(Notes, new Air(note)), op }) : op;
-                                    comp.Redo();
-                                    Invalidate();
-                                    return actionNoteHandler(action)
-                                        .Finally(() => OperationManager.Push(comp));
-                                }
-                            }
-
-                            return null;
-                        };
-
-                        switch (NewNoteType)
-                        {
-                            case NoteType.Air:
-                                // クリック後MouseMoveするならノーツ操作 / MouseUpならAIR追加
-                                return Observable.Merge(surfaceNotesHandler() ?? Observable.Empty<MouseEventArgs>(), addAirHandler() ?? Observable.Empty<MouseEventArgs>());
-
-                            case NoteType.AirAction:
-                                // AIR-ACTION追加時はその後のドラッグをハンドルする
-                                return addAirActionHandler() ?? surfaceNotesHandler() ?? Observable.Empty<MouseEventArgs>();
-                        }
-                    }
-                    else
-                    {
-                        var subscription = surfaceNotesHandler();
-                        if (subscription != null) return subscription;
-                    }
+                    var subscription2 = surfaceNotesHandler();
+                    if (subscription2 != null) return subscription2;
 
                     // なんもねえなら追加だァ！
                     if ((NoteType.Tap | NoteType.ExTap | NoteType.Flick | NoteType.Damage).HasFlag(NewNoteType))
@@ -1088,7 +624,7 @@ namespace Ched.UI
                                 op = new InsertDamageOperation(Notes, damage);
                                 break;
                         }
-                        newNote.Width = LastWidth;
+                        newNote.Width = 1;
                         newNote.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), 0);
                         int newNoteLaneIndex = (int)(scorePos.X / (UnitLaneWidth + BorderThickness)) - newNote.Width / 2;
                         newNoteLaneIndex = Math.Min(Constants.LanesCount - newNote.Width, Math.Max(0, newNoteLaneIndex));
@@ -1107,7 +643,7 @@ namespace Ched.UI
                                 var hold = new Hold
                                 {
                                     StartTick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), 0),
-                                    Width = LastWidth,
+                                    Width = 1,
                                     Duration = (int)QuantizeTick
                                 };
                                 newNoteLaneIndex = (int)(scorePos.X / (UnitLaneWidth + BorderThickness)) - hold.Width / 2;
@@ -1116,60 +652,6 @@ namespace Ched.UI
                                 Invalidate();
                                 return holdDurationHandler(hold)
                                     .Finally(() => OperationManager.Push(new InsertHoldOperation(Notes, hold)));
-
-                            case NoteType.Slide:
-                                // 中継点
-                                foreach (var note in Notes.Slides.Reverse())
-                                {
-                                    var bg = new Slide.TapBase[] { note.StartNote }.Concat(note.StepNotes.OrderBy(q => q.Tick)).ToList();
-                                    for (int i = 0; i < bg.Count - 1; i++)
-                                    {
-                                        // 描画時のコードコピペつらい
-                                        var path = NoteGraphics.GetSlideBackgroundPath(
-                                            (UnitLaneWidth + BorderThickness) * bg[i].Width - BorderThickness,
-                                            (UnitLaneWidth + BorderThickness) * bg[i + 1].Width - BorderThickness,
-                                            (UnitLaneWidth + BorderThickness) * bg[i].LaneIndex,
-                                            GetYPositionFromTick(bg[i].Tick),
-                                            (UnitLaneWidth + BorderThickness) * bg[i + 1].LaneIndex,
-                                            GetYPositionFromTick(bg[i + 1].Tick));
-                                        if (path.PathPoints.ContainsPoint(scorePos))
-                                        {
-                                            int tickOffset = GetQuantizedTick(GetTickFromYPosition(scorePos.Y)) - note.StartTick;
-                                            // 同一Tickに追加させない
-                                            if (tickOffset != 0 && !note.StepNotes.Any(q => q.TickOffset == tickOffset))
-                                            {
-                                                int width = note.StepNotes.OrderBy(q => q.TickOffset).LastOrDefault(q => q.TickOffset <= tickOffset)?.Width ?? note.StartWidth;
-                                                int laneIndex = (int)(scorePos.X / (UnitLaneWidth + BorderThickness)) - width / 2;
-                                                laneIndex = Math.Min(Constants.LanesCount - width, Math.Max(0, laneIndex));
-                                                var newStep = new Slide.StepTap(note)
-                                                {
-                                                    TickOffset = tickOffset,
-                                                    IsVisible = IsNewSlideStepVisible
-                                                };
-                                                newStep.SetPosition(laneIndex - note.StartLaneIndex, width - note.StartWidth);
-                                                note.StepNotes.Add(newStep);
-                                                Invalidate();
-                                                return moveSlideStepNoteHandler(newStep)
-                                                    .Finally(() => OperationManager.Push(new InsertSlideStepNoteOperation(note, newStep)));
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // 新規SLIDE
-                                var slide = new Slide()
-                                {
-                                    StartTick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), 0),
-                                    StartWidth = LastWidth
-                                };
-                                newNoteLaneIndex = (int)(scorePos.X / (UnitLaneWidth + BorderThickness)) - slide.StartWidth / 2;
-                                slide.StartLaneIndex = Math.Min(Constants.LanesCount - slide.StartWidth, Math.Max(0, newNoteLaneIndex));
-                                var step = new Slide.StepTap(slide) { TickOffset = (int)QuantizeTick };
-                                slide.StepNotes.Add(step);
-                                Notes.Add(slide);
-                                Invalidate();
-                                return moveSlideStepNoteHandler(step)
-                                    .Finally(() => OperationManager.Push(new InsertSlideOperation(Notes, slide)));
                         }
                     }
                     return Observable.Empty<MouseEventArgs>();
@@ -1231,71 +713,14 @@ namespace Ched.UI
                     matrix.Invert();
                     PointF scorePos = matrix.TransformPoint(p.Pos);
 
-                    Func<IAirable, IEnumerable<IOperation>> removeReferencedAirs = airable =>
-                    {
-                        var airs = Notes.GetReferencedAir(airable).ToList().Select(q =>
-                        {
-                            Notes.Remove(q);
-                            return new RemoveAirOperation(Notes, q);
-                        }).ToList();
-                        var airActions = Notes.GetReferencedAirAction(airable).ToList().Select(q =>
-                        {
-                            Notes.Remove(q);
-                            return new RemoveAirActionOperation(Notes, q);
-                        }).ToList();
-
-                        return airs.Cast<IOperation>().Concat(airActions);
-                    };
-
-                    foreach (var note in Notes.Airs.Reverse())
-                    {
-                        RectangleF rect = NoteGraphics.GetAirRect(GetRectFromNotePosition(note.ParentNote.Tick, note.ParentNote.LaneIndex, note.ParentNote.Width));
-                        if (rect.Contains(scorePos))
-                        {
-                            Notes.Remove(note);
-                            OperationManager.Push(new RemoveAirOperation(Notes, note));
-                            return;
-                        }
-                    }
-
-                    foreach (var note in Notes.AirActions.Reverse())
-                    {
-                        foreach (var action in note.ActionNotes)
-                        {
-                            RectangleF rect = GetClickableRectFromNotePosition(note.StartTick + action.Offset, note.ParentNote.LaneIndex, note.ParentNote.Width);
-                            if (rect.Contains(scorePos))
-                            {
-                                if (note.ActionNotes.Count == 1)
-                                {
-                                    Notes.Remove(note);
-                                    OperationManager.Push(new RemoveAirActionOperation(Notes, note));
-                                }
-                                else
-                                {
-                                    note.ActionNotes.Remove(action);
-                                    OperationManager.Push(new RemoveAirActionNoteOperation(note, action));
-                                }
-                                return;
-                            }
-                        }
-                    }
-
                     foreach (var note in Notes.Damages.Reverse())
                     {
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var airOp = removeReferencedAirs(note).ToList();
                             var op = new RemoveDamageOperation(Notes, note);
                             Notes.Remove(note);
-                            if (airOp.Count > 0)
-                            {
-                                OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
-                            }
-                            else
-                            {
-                                OperationManager.Push(op);
-                            }
+                            OperationManager.Push(op);
                             return;
                         }
                     }
@@ -1305,17 +730,9 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var airOp = removeReferencedAirs(note).ToList();
                             var op = new RemoveExTapOperation(Notes, note);
                             Notes.Remove(note);
-                            if (airOp.Count > 0)
-                            {
-                                OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
-                            }
-                            else
-                            {
-                                OperationManager.Push(op);
-                            }
+                            OperationManager.Push(op);
                             return;
                         }
                     }
@@ -1325,17 +742,9 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var airOp = removeReferencedAirs(note).ToList();
                             var op = new RemoveTapOperation(Notes, note);
                             Notes.Remove(note);
-                            if (airOp.Count > 0)
-                            {
-                                OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
-                            }
-                            else
-                            {
-                                OperationManager.Push(op);
-                            }
+                            OperationManager.Push(op);
                             return;
                         }
                     }
@@ -1345,48 +754,9 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var airOp = removeReferencedAirs(note).ToList();
                             var op = new RemoveFlickOperation(Notes, note);
                             Notes.Remove(note);
-                            if (airOp.Count > 0)
-                            {
-                                OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
-                            }
-                            else
-                            {
-                                OperationManager.Push(op);
-                            }
-                            return;
-                        }
-                    }
-
-                    foreach (var slide in Notes.Slides.Reverse())
-                    {
-                        foreach (var step in slide.StepNotes.OrderBy(q => q.TickOffset).Take(slide.StepNotes.Count - 1))
-                        {
-                            RectangleF rect = GetClickableRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
-                            if (rect.Contains(scorePos))
-                            {
-                                slide.StepNotes.Remove(step);
-                                OperationManager.Push(new RemoveSlideStepNoteOperation(slide, step));
-                                return;
-                            }
-                        }
-
-                        RectangleF startRect = GetClickableRectFromNotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
-                        if (startRect.Contains(scorePos))
-                        {
-                            var airOp = slide.StepNotes.SelectMany(q => removeReferencedAirs(q)).ToList();
-                            var op = new RemoveSlideOperation(Notes, slide);
-                            Notes.Remove(slide);
-                            if (airOp.Count > 0)
-                            {
-                                OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
-                            }
-                            else
-                            {
-                                OperationManager.Push(op);
-                            }
+                            OperationManager.Push(op);
                             return;
                         }
                     }
@@ -1396,17 +766,9 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var airOp = removeReferencedAirs(hold.EndNote).ToList();
                             var op = new RemoveHoldOperation(Notes, hold);
                             Notes.Remove(hold);
-                            if (airOp.Count > 0)
-                            {
-                                OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
-                            }
-                            else
-                            {
-                                OperationManager.Push(op);
-                            }
+                            OperationManager.Push(op);
                             return;
                         }
                     }
@@ -1433,7 +795,6 @@ namespace Ched.UI
                         var selectedNotes = GetSelectedNotes();
                         var dicShortNotes = selectedNotes.GetShortNotes().ToDictionary(q => q, q => new MoveShortNoteOperation.NotePosition(q.Tick, q.LaneIndex));
                         var dicHolds = selectedNotes.Holds.ToDictionary(q => q, q => new MoveHoldOperation.NotePosition(q.StartTick, q.LaneIndex, q.Width));
-                        var dicSlides = selectedNotes.Slides.ToDictionary(q => q, q => new MoveSlideOperation.NotePosition(q.StartTick, q.StartLaneIndex, q.StartWidth));
 
                         // 選択範囲移動
                         return mouseMove.TakeUntil(mouseUp).Do(q =>
@@ -1466,12 +827,6 @@ namespace Ched.UI
                                 item.Key.LaneIndex = item.Value.LaneIndex + (SelectedRange.StartLaneIndex - startLaneIndex);
                             }
 
-                            foreach (var item in dicSlides)
-                            {
-                                item.Key.StartTick = item.Value.StartTick + (SelectedRange.StartTick - startTick);
-                                item.Key.StartLaneIndex = item.Value.StartLaneIndex + (SelectedRange.StartLaneIndex - startLaneIndex);
-                            }
-
                             // AIR-ACTIONはOffsetの管理面倒で実装できませんでした。許せ
 
                             Invalidate();
@@ -1490,15 +845,10 @@ namespace Ched.UI
                                 return new MoveHoldOperation(q.Key, q.Value, after);
                             });
 
-                            var opSlides = dicSlides.Select(q =>
-                            {
-                                var after = new MoveSlideOperation.NotePosition(q.Key.StartTick, q.Key.StartLaneIndex, q.Key.StartWidth);
-                                return new MoveSlideOperation(q.Key, q.Value, after);
-                            });
 
                             // 同じ位置に戻ってきたら操作扱いにしない
                             if (startTick == SelectedRange.StartTick && startLaneIndex == SelectedRange.StartLaneIndex) return;
-                            OperationManager.Push(new CompositeOperation("ノーツの移動", opShortNotes.Cast<IOperation>().Concat(opHolds).Concat(opSlides).ToList()));
+                            OperationManager.Push(new CompositeOperation("ノーツの移動", opShortNotes.Cast<IOperation>().Concat(opHolds).ToList()));
                         });
                     }
                     else
@@ -1560,7 +910,7 @@ namespace Ched.UI
                 for (int i = 0; i <= Constants.LanesCount; i++)
                 {
                     float x = i * (UnitLaneWidth + BorderThickness);
-                    pe.Graphics.DrawLine(i % 2 == 0 ? lightPen : darkPen, x, GetYPositionFromTick(HeadTick), x, GetYPositionFromTick(tailTick));
+                    pe.Graphics.DrawLine(lightPen, x, GetYPositionFromTick(HeadTick), x, GetYPositionFromTick(tailTick));
                 }
             }
 
@@ -1621,82 +971,16 @@ namespace Ched.UI
                     ));
             }
 
-            // SLIDE
-            var slides = Notes.Slides.Where(p => p.StartTick <= tailTick && p.StartTick + p.GetDuration() >= HeadTick).ToList();
-            foreach (var slide in slides)
-            {
-                var bg = new Slide.TapBase[] { slide.StartNote }.Concat(slide.StepNotes.OrderBy(p => p.Tick)).ToList();
-                var visibleSteps = new Slide.TapBase[] { slide.StartNote }.Concat(slide.StepNotes.Where(p => p.IsVisible).OrderBy(p => p.Tick)).ToList();
-
-                int stepHead = bg.LastOrDefault(p => p.Tick <= HeadTick)?.Tick ?? bg[0].Tick;
-                int stepTail = bg.FirstOrDefault(p => p.Tick >= tailTick)?.Tick ?? bg[bg.Count - 1].Tick;
-                int visibleHead = visibleSteps.LastOrDefault(p => p.Tick <= HeadTick)?.Tick ?? visibleSteps[0].Tick;
-                int visibleTail = visibleSteps.FirstOrDefault(p => p.Tick >= tailTick)?.Tick ?? visibleSteps[visibleSteps.Count - 1].Tick;
-
-                var steps = bg
-                    .Where(p => p.Tick >= stepHead && p.Tick <= stepTail)
-                    .Select(p => new SlideStepElement()
-                    {
-                        Point = new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, GetYPositionFromTick(p.Tick)),
-                        Width = (UnitLaneWidth + BorderThickness) * p.Width - BorderThickness
-                    });
-                var visibleStepPos = visibleSteps
-                    .Where(p => p.Tick >= visibleHead && p.Tick <= visibleTail)
-                    .Select(p => GetYPositionFromTick(p.Tick));
-
-                if (stepHead == stepTail) continue;
-                dc.DrawSlideBackground(steps, visibleStepPos, ShortNoteHeight);
-            }
-
-            var airs = Notes.Airs.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick).ToList();
-            var airActions = Notes.AirActions.Where(p => p.StartTick <= tailTick && p.StartTick + p.GetDuration() >= HeadTick).ToList();
-
-            // AIR-ACTION(ガイド線)
-            foreach (var note in airActions)
-            {
-                dc.DrawAirHoldLine(
-                    (UnitLaneWidth + BorderThickness) * (note.ParentNote.LaneIndex + note.ParentNote.Width / 2f),
-                    GetYPositionFromTick(note.StartTick),
-                    GetYPositionFromTick(note.StartTick + note.GetDuration()),
-                    ShortNoteHeight);
-            }
-
-            // ロングノーツ終点AIR
-            foreach (var note in airs)
-            {
-                if (!(note.ParentNote is LongNoteTapBase)) continue;
-                RectangleF rect = GetRectFromNotePosition(note.ParentNote.Tick, note.ParentNote.LaneIndex, note.ParentNote.Width);
-                dc.DrawAirStep(rect);
-            }
-
             // 中継点
             foreach (var hold in holds)
             {
-                if (Notes.GetReferencedAir(hold.EndNote).Count() > 0) continue; // AIR付き終点
                 dc.DrawHoldEnd(GetRectFromNotePosition(hold.StartTick + hold.Duration, hold.LaneIndex, hold.Width));
-            }
-
-            foreach (var slide in slides)
-            {
-                foreach (var step in slide.StepNotes.OrderBy(p => p.TickOffset))
-                {
-                    if (!Editable && !step.IsVisible) continue;
-                    if (Notes.GetReferencedAir(step).Count() > 0) break; // AIR付き終点
-                    RectangleF rect = GetRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
-                    if (step.IsVisible) dc.DrawSlideStep(rect);
-                    else dc.DrawBorder(rect);
-                }
             }
 
             // 始点
             foreach (var hold in holds)
             {
                 dc.DrawHoldBegin(GetRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width));
-            }
-
-            foreach (var slide in slides)
-            {
-                dc.DrawSlideBegin(GetRectFromNotePosition(slide.StartTick, slide.StartNote.LaneIndex, slide.StartWidth));
             }
 
             // TAP, ExTAP, FLICK, DAMAGE
@@ -1718,22 +1002,6 @@ namespace Ched.UI
             foreach (var note in Notes.Damages.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
             {
                 dc.DrawDamage(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));
-            }
-
-            // AIR-ACTION(ActionNote)
-            foreach (var action in airActions)
-            {
-                foreach (var note in action.ActionNotes)
-                {
-                    dc.DrawAirAction(GetRectFromNotePosition(action.StartTick + note.Offset, action.ParentNote.LaneIndex, action.ParentNote.Width).Expand(-ShortNoteHeight * 0.28f));
-                }
-            }
-
-            // AIR
-            foreach (var note in airs)
-            {
-                RectangleF rect = GetRectFromNotePosition(note.ParentNote.Tick, note.ParentNote.LaneIndex, note.ParentNote.Width);
-                dc.DrawAir(rect, note.VerticalDirection, note.HorizontalDirection);
             }
 
             // 選択範囲描画
@@ -1913,15 +1181,10 @@ namespace Ched.UI
             c.Flicks.AddRange(Notes.Flicks.Where(p => contained(p)));
             c.Damages.AddRange(Notes.Damages.Where(p => contained(p)));
             c.Holds.AddRange(Notes.Holds.Where(p => p.StartTick >= minTick && p.StartTick + p.Duration <= maxTick && p.LaneIndex >= startLaneIndex && p.LaneIndex + p.Width <= endLaneIndex));
-            c.Slides.AddRange(Notes.Slides.Where(p => p.StartTick >= minTick && p.StartTick + p.GetDuration() <= maxTick && p.StartLaneIndex >= startLaneIndex && p.StartLaneIndex + p.StartWidth <= endLaneIndex && p.StepNotes.All(r => r.LaneIndex >= startLaneIndex && r.LaneIndex + r.Width <= endLaneIndex)));
 
             var airables = c.GetShortNotes().Cast<IAirable>()
                 .Concat(c.Holds.Select(p => p.EndNote))
-                .Concat(c.Slides.SelectMany(p => p.StepNotes))
                 .ToList();
-            c.Airs.AddRange(airables.SelectMany(p => Notes.GetReferencedAir(p)));
-            // AIR-ACTIONはとりあえず全コピー
-            c.AirActions.AddRange(airables.SelectMany(p => Notes.GetReferencedAirAction(p)));
             return c;
         }
 
@@ -1982,29 +1245,13 @@ namespace Ched.UI
                 hold.StartTick = hold.StartTick - originTick + CurrentTick;
             }
 
-            foreach (var slide in data.SelectedNotes.Slides)
-            {
-                slide.StartTick = slide.StartTick - originTick + CurrentTick;
-            }
-
-            foreach (var airAction in data.SelectedNotes.AirActions)
-            {
-                // AIR-ACTIONの親ノート復元できないんやった……クソ設計だわ……
-                var notes = airAction.ActionNotes.Select(p => new AirAction.ActionNote(airAction) { Offset = p.Offset }).ToList();
-                airAction.ActionNotes.Clear();
-                airAction.ActionNotes.AddRange(notes);
-            }
-
             action(data);
 
             var op = data.SelectedNotes.Taps.Select(p => new InsertTapOperation(Notes, p)).Cast<IOperation>()
                 .Concat(data.SelectedNotes.ExTaps.Select(p => new InsertExTapOperation(Notes, p)))
                 .Concat(data.SelectedNotes.Flicks.Select(p => new InsertFlickOperation(Notes, p)))
                 .Concat(data.SelectedNotes.Damages.Select(p => new InsertDamageOperation(Notes, p)))
-                .Concat(data.SelectedNotes.Holds.Select(p => new InsertHoldOperation(Notes, p)))
-                .Concat(data.SelectedNotes.Slides.Select(p => new InsertSlideOperation(Notes, p)))
-                .Concat(data.SelectedNotes.Airs.Select(p => new InsertAirOperation(Notes, p)))
-                .Concat(data.SelectedNotes.AirActions.Select(p => new InsertAirActionOperation(Notes, p)));
+                .Concat(data.SelectedNotes.Holds.Select(p => new InsertHoldOperation(Notes, p)));
             var composite = new CompositeOperation("クリップボードからペースト", op.ToList());
             composite.Redo(); // 追加書くの面倒になったので許せ
             return composite;
@@ -2013,17 +1260,6 @@ namespace Ched.UI
         public void RemoveSelectedNotes()
         {
             var selected = GetSelectedNotes();
-
-            var airs = selected.Airs.ToList().Select(p =>
-            {
-                Notes.Remove(p);
-                return new RemoveAirOperation(Notes, p);
-            });
-            var airActions = selected.AirActions.Select(p =>
-            {
-                Notes.Remove(p);
-                return new RemoveAirActionOperation(Notes, p);
-            }).ToList();
 
             var taps = selected.Taps.Select(p =>
             {
@@ -2050,15 +1286,9 @@ namespace Ched.UI
                 Notes.Remove(p);
                 return new RemoveHoldOperation(Notes, p);
             });
-            var slides = selected.Slides.Select(p =>
-            {
-                Notes.Remove(p);
-                return new RemoveSlideOperation(Notes, p);
-            });
 
             var opList = taps.Cast<IOperation>().Concat(extaps).Concat(flicks).Concat(damages)
-                .Concat(holds).Concat(slides)
-                .Concat(airs).Concat(airActions)
+                .Concat(holds)
                 .ToList();
 
             if (opList.Count == 0) return;
@@ -2084,12 +1314,7 @@ namespace Ched.UI
         {
             var dicShortNotes = notes.GetShortNotes().ToDictionary(q => q, q => new MoveShortNoteOperation.NotePosition(q.Tick, q.LaneIndex));
             var dicHolds = notes.Holds.ToDictionary(q => q, q => new MoveHoldOperation.NotePosition(q.StartTick, q.LaneIndex, q.Width));
-            var dicSlides = notes.Slides;
             var referenced = new NoteCollection(notes);
-            var airs = notes.GetShortNotes().Cast<IAirable>()
-                .Concat(notes.Holds.Select(p => p.EndNote))
-                .Concat(notes.Slides.Select(p => p.StepNotes.OrderByDescending(q => q.TickOffset).First()))
-                .SelectMany(p => referenced.GetReferencedAir(p));
 
             var opShortNotes = dicShortNotes.Select(p =>
             {
@@ -2105,19 +1330,7 @@ namespace Ched.UI
                 return new MoveHoldOperation(p.Key, p.Value, after);
             });
 
-            var opSlides = dicSlides.Select(p =>
-            {
-                p.Flip();
-                return new FlipSlideOperation(p);
-            });
-
-            var opAirs = airs.Select(p =>
-            {
-                p.Flip();
-                return new FlipAirHorizontalDirectionOperation(p);
-            });
-
-            var opList = opShortNotes.Cast<IOperation>().Concat(opHolds).Concat(opSlides).Concat(opAirs).ToList();
+            var opList = opShortNotes.Cast<IOperation>().Concat(opHolds).ToList();
             return opList.Count == 0 ? null : new CompositeOperation("ノーツの反転", opList);
         }
 
@@ -2171,15 +1384,9 @@ namespace Ched.UI
 
             private Core.NoteCollection source = new Core.NoteCollection();
 
-            private Dictionary<IAirable, HashSet<Air>> AirDictionary { get; } = new Dictionary<IAirable, HashSet<Air>>();
-            private Dictionary<IAirable, HashSet<AirAction>> AirActionDictionary { get; } = new Dictionary<IAirable, HashSet<AirAction>>();
-
             public IReadOnlyCollection<Tap> Taps { get { return source.Taps; } }
             public IReadOnlyCollection<ExTap> ExTaps { get { return source.ExTaps; } }
             public IReadOnlyCollection<Hold> Holds { get { return source.Holds; } }
-            public IReadOnlyCollection<Slide> Slides { get { return source.Slides; } }
-            public IReadOnlyCollection<Air> Airs { get { return source.Airs; } }
-            public IReadOnlyCollection<AirAction> AirActions { get { return source.AirActions; } }
             public IReadOnlyCollection<Flick> Flicks { get { return source.Flicks; } }
             public IReadOnlyCollection<Damage> Damages { get { return source.Damages; } }
 
@@ -2203,30 +1410,6 @@ namespace Ched.UI
             public void Add(Hold note)
             {
                 source.Holds.Add(note);
-                NoteChanged?.Invoke(this, EventArgs.Empty);
-            }
-
-            public void Add(Slide note)
-            {
-                source.Slides.Add(note);
-                NoteChanged?.Invoke(this, EventArgs.Empty);
-            }
-
-            public void Add(Air note)
-            {
-                source.Airs.Add(note);
-                if (!AirDictionary.ContainsKey(note.ParentNote))
-                    AirDictionary.Add(note.ParentNote, new HashSet<Air>());
-                AirDictionary[note.ParentNote].Add(note);
-                NoteChanged?.Invoke(this, EventArgs.Empty);
-            }
-
-            public void Add(AirAction note)
-            {
-                source.AirActions.Add(note);
-                if (!AirActionDictionary.ContainsKey(note.ParentNote))
-                    AirActionDictionary.Add(note.ParentNote, new HashSet<AirAction>());
-                AirActionDictionary[note.ParentNote].Add(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
 
@@ -2261,26 +1444,6 @@ namespace Ched.UI
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            public void Remove(Slide note)
-            {
-                source.Slides.Remove(note);
-                NoteChanged?.Invoke(this, EventArgs.Empty);
-            }
-
-            public void Remove(Air note)
-            {
-                source.Airs.Remove(note);
-                AirDictionary[note.ParentNote].Remove(note);
-                NoteChanged?.Invoke(this, EventArgs.Empty);
-            }
-
-            public void Remove(AirAction note)
-            {
-                source.AirActions.Remove(note);
-                AirActionDictionary[note.ParentNote].Remove(note);
-                NoteChanged?.Invoke(this, EventArgs.Empty);
-            }
-
             public void Remove(Flick note)
             {
                 source.Flicks.Remove(note);
@@ -2293,22 +1456,10 @@ namespace Ched.UI
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            public IEnumerable<Air> GetReferencedAir(IAirable note)
-            {
-                if (!AirDictionary.ContainsKey(note)) return Enumerable.Empty<Air>();
-                return AirDictionary[note];
-            }
-
-            public IEnumerable<AirAction> GetReferencedAirAction(IAirable note)
-            {
-                if (!AirActionDictionary.ContainsKey(note)) return Enumerable.Empty<AirAction>();
-                return AirActionDictionary[note];
-            }
-
             public int GetLastTick()
             {
                 var shortNotes = Taps.Cast<TappableBase>().Concat(ExTaps).Concat(Flicks).Concat(Damages).ToList();
-                var longNotes = Holds.Cast<ILongNote>().Concat(Slides).Concat(AirActions).ToList();
+                var longNotes = Holds.Cast<ILongNote>().ToList();
                 int lastShortNoteTick = shortNotes.Count == 0 ? 0 : shortNotes.Max(p => p.Tick);
                 int lastLongNoteTick = longNotes.Count == 0 ? 0 : longNotes.Max(p => p.StartTick + p.GetDuration());
                 return Math.Max(lastShortNoteTick, lastLongNoteTick);
@@ -2322,9 +1473,6 @@ namespace Ched.UI
                 foreach (var note in collection.Taps) Add(note);
                 foreach (var note in collection.ExTaps) Add(note);
                 foreach (var note in collection.Holds) Add(note);
-                foreach (var note in collection.Slides) Add(note);
-                foreach (var note in collection.Airs) Add(note);
-                foreach (var note in collection.AirActions) Add(note);
                 foreach (var note in collection.Flicks) Add(note);
                 foreach (var note in collection.Damages) Add(note);
             }
@@ -2332,10 +1480,6 @@ namespace Ched.UI
             public void Clear()
             {
                 source = new Core.NoteCollection();
-
-                AirDictionary.Clear();
-                AirActionDictionary.Clear();
-
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
 
@@ -2359,23 +1503,8 @@ namespace Ched.UI
         Tap = 1,
         ExTap = 1 << 1,
         Hold = 1 << 2,
-        Slide = 1 << 3,
-        Air = 1 << 4,
-        AirAction = 1 << 5,
-        Flick = 1 << 6,
-        Damage = 1 << 7
-    }
-
-    public struct AirDirection
-    {
-        public VerticalAirDirection VerticalDirection { get; }
-        public HorizontalAirDirection HorizontalDirection { get; }
-
-        public AirDirection(VerticalAirDirection verticalDirection, HorizontalAirDirection horizontaiDirection)
-        {
-            VerticalDirection = verticalDirection;
-            HorizontalDirection = horizontaiDirection;
-        }
+        Flick = 1 << 3,
+        Damage = 1 << 4
     }
 
     [Serializable]
@@ -2409,7 +1538,7 @@ namespace Ched.UI
             get
             {
                 CheckRestored();
-                return SelectedNotes.GetShortNotes().Count() == 0 && SelectedNotes.Holds.Count == 0 && SelectedNotes.Slides.Count == 0 && SelectedNotes.Airs.Count == 0 && SelectedNotes.AirActions.Count == 0;
+                return SelectedNotes.GetShortNotes().Count() == 0 && SelectedNotes.Holds.Count == 0;
             }
         }
 
@@ -2483,9 +1612,6 @@ namespace Ched.UI
             res.Taps = collection.Taps.ToList();
             res.ExTaps = collection.ExTaps.ToList();
             res.Holds = collection.Holds.ToList();
-            res.Slides = collection.Slides.ToList();
-            res.Airs = collection.Airs.ToList();
-            res.AirActions = collection.AirActions.ToList();
             res.Flicks = collection.Flicks.ToList();
             res.Damages = collection.Damages.ToList();
             return res;
