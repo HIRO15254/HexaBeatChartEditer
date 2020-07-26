@@ -1,10 +1,7 @@
-# Ched
+# HexabeatChartEditer
 
-[![Build status](https://ci.appveyor.com/api/projects/status/pq1lght43m7ytlv1?svg=true)](https://ci.appveyor.com/project/paralleltree/ched)
-
-某スライドしてヘドバンする音ゲーの譜面エディタ
-
-既知のバグについては[Issues](https://github.com/paralleltree/Ched/issues)を参照してください。
+Windows用音楽ゲーム｢Hexabeat｣用の譜面エディターです。
+この譜面エディターはMITライセンスのもと公開されている某スライドしてヘドバンする音ゲー用譜面エディタ｢[ched](https://github.com/paralleltree/Ched)｣の改変ツールです
 
 ## 機能とか
 
