@@ -1,6 +1,7 @@
 # HexabeatChartEditer
 
 Windows用音楽ゲーム｢Hexabeat｣用の譜面エディターです。
+
 この譜面エディターはMITライセンスのもと公開されている某スライドしてヘドバンする音ゲー用譜面エディタ｢[ched](https://github.com/paralleltree/Ched)｣の改変ツールです
 
 ## 機能とか
@@ -8,24 +9,23 @@ Windows用音楽ゲーム｢Hexabeat｣用の譜面エディターです。
   * 時間軸ズーム
   * カスタム音符指定(1920分音符まで)
   * 再生プレビュー
-  * 譜面保管所風プレビュー
   * BPM, ハイスピード, 拍子変更
-  * [Seaurchin Score File(sus形式)](https://seaurchin.kb10uy.org)へのエクスポート
+  * Hexabeat Chart File形式(hxc形式)へのエクスポート
 
 ## ダウンロード
 
-現在の最新版は[v2.6.3](https://github.com/paralleltree/Ched/releases)です。
+現在の最新版は[v1.0.0](https://github.com/paralleltree/Ched/releases)です。
 
 ## 使い方
 
-[Wiki](https://github.com/paralleltree/Ched/wiki)を参照してください。
+基本的な使い方はChedとほぼ同じです。
 
-## スクリーンショット
+自分でWikiを立てるのに時間がかかりそうなので、暫定的にChedさんの[Wiki](https://github.com/paralleltree/Ched/wiki)を参照してください。
 
-![preview](https://user-images.githubusercontent.com/7324519/36943885-93922e32-1fd4-11e8-9042-688d36288a03.png)
+(SlideとAir系のノーツがない以外の相違点はほぼありません)
 
 ## フィードバックについて
-バグ報告などは[@paralleltree](https://twitter.com/paralleltree)までお願いします。
+バグ報告などは[@hiro15254](https://twitter.com/hiro15254)までお願いします。
 
 ## ライセンス
 ChedはMITライセンスです。
@@ -78,9 +78,4 @@ All trademarks and other registered names contained in the BASS
 package are the property of their respective owners.
 
 ## Special Thanks
-  * [@kb10uy](https://twitter.com/kb10uy)
-  * [@Horeizai_YMK](https://twitter.com/Horeizai_YMK)
-  * [@Citringo](https://github.com/Citringo)
-  * [@aripen1231](https://twitter.com/aripen1231)
-  * [@ORIent_8](https://twitter.com/ORIent_8)
-  * [@masa_otoge](https://twitter.com/masa_otoge)
+  [@parareltree](https://twitter.com/parareltree)さんはじめ、chedの開発に関わってくださった方々
