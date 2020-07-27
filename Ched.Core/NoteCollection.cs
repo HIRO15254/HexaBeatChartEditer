@@ -17,9 +17,11 @@ namespace Ched.Core
         [Newtonsoft.Json.JsonProperty]
         private List<Tap> taps;
         [Newtonsoft.Json.JsonProperty]
-        private List<ExTap> exTaps;
+        private List<DTap> dTaps;
         [Newtonsoft.Json.JsonProperty]
         private List<Hold> holds;
+        [Newtonsoft.Json.JsonProperty]
+        private List<DHold> dHolds;
         [Newtonsoft.Json.JsonProperty]
         private List<Flick> flicks;
         [Newtonsoft.Json.JsonProperty]
@@ -32,16 +34,21 @@ namespace Ched.Core
             set { taps = value; }
         }
 
-        public List<ExTap> ExTaps
+        public List<DTap> DTaps
         {
-            get { return exTaps; }
-            set { exTaps = value; }
+            get { return dTaps; }
+            set { dTaps = value; }
         }
 
         public List<Hold> Holds
         {
             get { return holds; }
             set { holds = value; }
+        }
+        public List<DHold> DHolds
+        {
+            get { return dHolds; }
+            set { dHolds = value; }
         }
 
         public List<Flick> Flicks
@@ -59,8 +66,9 @@ namespace Ched.Core
         public NoteCollection()
         {
             Taps = new List<Tap>();
-            ExTaps = new List<ExTap>();
+            DTaps = new List<DTap>();
             Holds = new List<Hold>();
+            DHolds = new List<DHold>();
             Flicks = new List<Flick>();
             Damages = new List<Damage>();
         }
@@ -68,15 +76,20 @@ namespace Ched.Core
         public NoteCollection(NoteCollection collection)
         {
             Taps = collection.Taps.ToList();
-            ExTaps = collection.ExTaps.ToList();
+            DTaps = collection.DTaps.ToList();
             Holds = collection.Holds.ToList();
+            DHolds = collection.DHolds.ToList();
             Flicks = collection.Flicks.ToList();
             Damages = collection.Damages.ToList();
         }
 
         public IEnumerable<TappableBase> GetShortNotes()
         {
-            return Taps.Cast<TappableBase>().Concat(ExTaps).Concat(Flicks).Concat(Damages);
+            return Taps.Cast<TappableBase>().Concat(DTaps).Concat(Flicks).Concat(Damages);
+        }
+        public IEnumerable<Hold> GetLongNotes()
+        {
+            return Taps.Cast<Hold>().Concat(DHolds);
         }
 
         public void UpdateTicksPerBeat(double factor)
@@ -84,7 +97,7 @@ namespace Ched.Core
             foreach (var note in GetShortNotes())
                 note.Tick = (int)(note.Tick * factor);
 
-            foreach (var hold in Holds)
+            foreach (var hold in GetLongNotes())
             {
                 hold.StartTick = (int)(hold.StartTick * factor);
                 hold.Duration = (int)(hold.Duration * factor);

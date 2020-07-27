@@ -23,7 +23,7 @@ namespace Ched.Drawing
     {
         public GradientColor BorderColor { get; set; }
         public GradientColor TapColor { get; set; }
-        public GradientColor ExTapColor { get; set; }
+        public GradientColor DTapColor { get; set; }
 
         /// <summary>
         /// フリックを描画する際の<see cref="GradientColor"/>を指定します.
@@ -33,5 +33,7 @@ namespace Ched.Drawing
         public GradientColor DamageColor { get; set; }
         public GradientColor HoldBackgroundColor { get; set; }
         public GradientColor HoldColor { get; set; }
+        public GradientColor DHoldBackgroundColor { get; set; }
+        public GradientColor DHoldColor { get; set; }
     }
 }

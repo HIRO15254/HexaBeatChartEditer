@@ -121,6 +121,6 @@
     <value>音声ファイル</value>
   </data>
   <data name="ChedFilter" xml:space="preserve">
-    <value>Ched専用形式</value>
+    <value>HexabeatChartEditer専用形式</value>
   </data>
 </root>

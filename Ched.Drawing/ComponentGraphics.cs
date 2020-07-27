@@ -13,7 +13,6 @@ namespace Ched.Drawing
         public static void DrawTappableNote(this Graphics g, RectangleF rect, GradientColor foregroundColors, GradientColor borderColors)
         {
             g.DrawNote(rect, foregroundColors, borderColors);
-            g.DrawTapSymbol(rect);
         }
 
         public static void DrawNote(this Graphics g, RectangleF rect, GradientColor foregroundColors, GradientColor borderColors)
@@ -24,7 +23,7 @@ namespace Ched.Drawing
 
         public static void DrawNoteBase(this Graphics g, RectangleF rect, GradientColor colors)
         {
-            using (var path = rect.ToRoundedPath(rect.Height * 0.3f))
+            using (var path = rect.ToRoundedPath(rect.Height * 0.5f))
             {
                 using (var brush = new LinearGradientBrush(rect, colors.DarkColor, colors.LightColor, LinearGradientMode.Vertical))
                 {
@@ -40,7 +39,7 @@ namespace Ched.Drawing
             {
                 using (var pen = new Pen(brush, borderWidth))
                 {
-                    using (var path = rect.ToRoundedPath(rect.Height * 0.3f))
+                    using (var path = rect.ToRoundedPath(rect.Height * 0.5f))
                     {
                         g.DrawPath(pen, path);
                     }
@@ -69,7 +68,6 @@ namespace Ched.Drawing
         {
             using (var pen = new Pen(Color.White, rect.Height * 0.1f))
             {
-                g.DrawLine(pen, rect.Left + rect.Width * 0.2f, rect.Top + rect.Height / 2f, rect.Right - rect.Width * 0.2f, rect.Top + rect.Height / 2);
             }
         }
     }

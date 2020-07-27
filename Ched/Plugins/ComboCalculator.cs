@@ -22,8 +22,9 @@ namespace Ched.Plugins
             var sb = new StringBuilder();
             sb.AppendLine(string.Format("総コンボ数: {0}", combo.Total));
             sb.AppendLine(string.Format("TAP: {0}", combo.Tap));
+            sb.AppendLine(string.Format("DTAP: {0}", combo.Tap));
             sb.AppendLine(string.Format("HOLD: {0}", combo.Hold));
-            sb.AppendLine(string.Format("FLICK: {0}", combo.Flick));
+            sb.AppendLine(string.Format("DHOLD: {0}", combo.DHold));
 
             MessageBox.Show(sb.ToString(), DisplayName);
         }
@@ -34,12 +35,16 @@ namespace Ched.Plugins
             combo.Tap += new int[]
             {
                 score.Notes.Taps.Count,
-                score.Notes.ExTaps.Count,
                 score.Notes.Damages.Count,
-                score.Notes.Holds.Count,
+                score.Notes.Holds.Count
             }.Sum();
 
-            combo.Flick += score.Notes.Flicks.Count;
+            combo.DTap += new int[]
+            {
+                score.Notes.DTaps.Count,
+                score.Notes.DHolds.Count
+            }.Sum();
+
 
             int barTick = 4 * score.TicksPerBeat;
             var bpmEvents = score.Events.BPMChangeEvents.OrderBy(p => p.Tick).ToList();
@@ -81,16 +86,22 @@ namespace Ched.Plugins
                 combo.Hold += tickList.Count;
             }
 
+            foreach (var hold in score.Notes.DHolds)
+            {
+                var tickList = new HashSet<int>(calcComboTicks(hold.StartTick, new int[] { hold.Duration }));
+                combo.DHold += tickList.Count;
+            }
+
             return combo;
         }
 
         public struct ComboDetails
         {
-            public int Total => Tap + Hold + Air + Flick;
+            public int Total => Tap +  DTap + Hold + DHold;
             public int Tap { get; set; }
+            public int DTap { get; set; }
             public int Hold { get; set; }
-            public int Air { get; set; }
-            public int Flick { get; set; }
+            public int DHold { get; set; }
         }
     }
 }

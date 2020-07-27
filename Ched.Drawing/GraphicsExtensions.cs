@@ -20,11 +20,10 @@ namespace Ched.Drawing
 
             var path = new GraphicsPath();
 
-            path.AddArc(rect.Left, rect.Top, radius * 2, radius * 2, 180, 90);
-            path.AddArc(rect.Right - radius * 2, rect.Top, radius * 2, radius * 2, 270, 90);
-            path.AddArc(rect.Right - radius * 2, rect.Bottom - radius * 2, radius * 2, radius * 2, 0, 90);
-            path.AddArc(rect.Left, rect.Bottom - radius * 2, radius * 2, radius * 2, 90, 90);
-            path.CloseFigure();
+            path.AddLine(rect.Left + radius * 0.86f, rect.Top, rect.Left, rect.Top + radius);
+            path.AddLine(rect.Left, rect.Bottom - radius, rect.Left + radius * 0.86f, rect.Bottom);
+            path.AddLine(rect.Right - radius * 0.86f, rect.Bottom, rect.Right, rect.Bottom - radius);
+            path.AddLine(rect.Right, rect.Top + radius, rect.Right - radius * 0.86f, rect.Top);
             return path;
         }
 

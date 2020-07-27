@@ -22,7 +22,7 @@ namespace Ched.UI
 {
     public partial class MainForm : Form
     {
-        private readonly string FileExtension = ".chs";
+        private readonly string FileExtension = ".hce";
         private string FileTypeFilter => FileFilterStrings.ChedFilter + string.Format("({0})|{1}", "*" + FileExtension, "*" + FileExtension);
 
         private bool isPreviewMode;
@@ -341,7 +341,7 @@ namespace Ched.UI
 
         protected void SetText(string filePath)
         {
-            Text = "Ched" + (string.IsNullOrEmpty(filePath) ? "" : " - " + Path.GetFileName(filePath)) + (OperationManager.IsChanged ? " *" : "");
+            Text = "HexabeatChartEditer" + (string.IsNullOrEmpty(filePath) ? "" : " - " + Path.GetFileName(filePath)) + (OperationManager.IsChanged ? " *" : "");
         }
 
         private void UpdateThumbHeight()
@@ -837,7 +837,7 @@ namespace Ched.UI
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
-            var exTapButton = new ToolStripButton("ExTAP", Resources.ExTapIcon, (s, e) => noteView.NewNoteType = NoteType.ExTap)
+            var dTapButton = new ToolStripButton("DTAP", Resources.DTapIcon, (s, e) => noteView.NewNoteType = NoteType.DTap)
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
@@ -845,11 +845,7 @@ namespace Ched.UI
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
-            var flickButton = new ToolStripButton("FLICK", Resources.FlickIcon, (s, e) => noteView.NewNoteType = NoteType.Flick)
-            {
-                DisplayStyle = ToolStripItemDisplayStyle.Image
-            };
-            var damageButton = new ToolStripButton("DAMAGE", Resources.DamgeIcon, (s, e) => noteView.NewNoteType = NoteType.Damage)
+            var dHoldButton = new ToolStripButton("DHOLD", Resources.DHoldIcon, (s, e) => noteView.NewNoteType = NoteType.DHold)
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
@@ -888,15 +884,14 @@ namespace Ched.UI
             noteView.NewNoteTypeChanged += (s, e) =>
             {
                 tapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Tap);
-                exTapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.ExTap);
+                dTapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.DTap);
                 holdButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Hold);
-                flickButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Flick);
-                damageButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Damage);
+                dHoldButton.Checked = noteView.NewNoteType.HasFlag(NoteType.DHold);
             };
 
             return new ToolStrip(new ToolStripItem[]
             {
-                tapButton, exTapButton, holdButton, flickButton, damageButton,
+                tapButton, dTapButton, holdButton, dHoldButton,
                 quantizeComboBox
             });
         }

@@ -70,8 +70,9 @@
     <Compile Include="Events\HighSpeedChangeEvent.cs" />
     <Compile Include="Events\TimeSignatureChangeEvent.cs" />
     <Compile Include="NoteCollection.cs" />
+    <Compile Include="Notes\D-Hold.cs" />
     <Compile Include="Notes\Damage.cs" />
-    <Compile Include="Notes\ExTap.cs" />
+    <Compile Include="Notes\D-Tap.cs" />
     <Compile Include="Notes\Flick.cs" />
     <Compile Include="Notes\Hold.cs" />
     <Compile Include="Notes\LongNoteBase.cs" />

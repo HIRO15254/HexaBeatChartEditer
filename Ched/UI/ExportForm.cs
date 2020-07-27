@@ -16,8 +16,8 @@ namespace Ched.UI
 {
     public partial class ExportForm : Form
     {
-        private readonly string ArgsKey = "sus";
-        private readonly string Filter = "Seaurchin Score File(*.sus)|*.sus";
+        private readonly string ArgsKey = "hxc";
+        private readonly string Filter = "Hexabeat Chart file(*.hxc)|*.hxc";
 
         private SusExporter exporter = new SusExporter();
 
@@ -36,7 +36,7 @@ namespace Ched.UI
             ShowInTaskbar = false;
 
             levelDropDown.Items.AddRange(Enumerable.Range(1, 14).SelectMany(p => new string[] { p.ToString(), p + "+" }).ToArray());
-            difficultyDropDown.Items.AddRange(new string[] { "BASIC", "ADVANCED", "EXPERT", "MASTER", "WORLD'S END" });
+            difficultyDropDown.Items.AddRange(new string[] { "BASIC", "HARD", "EXPERT" });
 
             if (!book.ExporterArgs.ContainsKey(ArgsKey) || !(book.ExporterArgs[ArgsKey] is SusArgs))
             {

@@ -141,7 +141,7 @@ namespace Ched.UI.Operations
         }
     }
 
-    public class ChangeHoldDurationOperation : IOperation
+    public class ChangeLongNoteDurationOperation : IOperation
     {
         public string Description { get { return "HOLD長さの変更"; } }
 
@@ -149,7 +149,7 @@ namespace Ched.UI.Operations
         protected int BeforeDuration { get; }
         protected int AfterDuration { get; }
 
-        public ChangeHoldDurationOperation(Hold note, int beforeDuration, int afterDuration)
+        public ChangeLongNoteDurationOperation(Hold note, int beforeDuration, int afterDuration)
         {
             Note = note;
             BeforeDuration = beforeDuration;
@@ -167,7 +167,7 @@ namespace Ched.UI.Operations
         }
     }
 
-    public class MoveHoldOperation : IOperation
+    public class MoveLongNoteOperation : IOperation
     {
         public string Description { get { return "HOLDの移動"; } }
 
@@ -175,7 +175,7 @@ namespace Ched.UI.Operations
         protected NotePosition BeforePosition { get; }
         protected NotePosition AfterPosition { get; }
 
-        public MoveHoldOperation(Hold note, NotePosition before, NotePosition after)
+        public MoveLongNoteOperation(Hold note, NotePosition before, NotePosition after)
         {
             Note = note;
             BeforePosition = before;

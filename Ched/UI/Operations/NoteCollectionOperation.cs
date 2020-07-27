@@ -62,11 +62,11 @@ namespace Ched.UI.Operations
         }
     }
 
-    public class InsertExTapOperation : NoteCollectionOperation<ExTap>
+    public class InsertExTapOperation : NoteCollectionOperation<DTap>
     {
-        public override string Description { get { return "ExTAPの追加"; } }
+        public override string Description { get { return "DTAPの追加"; } }
 
-        public InsertExTapOperation(NoteView.NoteCollection collection, ExTap note) : base(collection, note)
+        public InsertExTapOperation(NoteView.NoteCollection collection, DTap note) : base(collection, note)
         {
         }
 
@@ -81,11 +81,11 @@ namespace Ched.UI.Operations
         }
     }
 
-    public class RemoveExTapOperation : NoteCollectionOperation<ExTap>
+    public class RemoveExTapOperation : NoteCollectionOperation<DTap>
     {
-        public override string Description { get { return "ExTAPの削除"; } }
+        public override string Description { get { return "DTAPの削除"; } }
 
-        public RemoveExTapOperation(NoteView.NoteCollection collection, ExTap note) : base(collection, note)
+        public RemoveExTapOperation(NoteView.NoteCollection collection, DTap note) : base(collection, note)
         {
         }
 
@@ -124,6 +124,44 @@ namespace Ched.UI.Operations
         public override string Description { get { return "HOLDの削除"; } }
 
         public RemoveHoldOperation(NoteView.NoteCollection collection, Hold note) : base(collection, note)
+        {
+        }
+
+        public override void Redo()
+        {
+            Collection.Remove(Note);
+        }
+
+        public override void Undo()
+        {
+            Collection.Add(Note);
+        }
+    }
+
+    public class InsertDHoldOperation : NoteCollectionOperation<DHold>
+    {
+        public override string Description { get { return "DHOLDの追加"; } }
+
+        public InsertDHoldOperation(NoteView.NoteCollection collection, DHold note) : base(collection, note)
+        {
+        }
+
+        public override void Redo()
+        {
+            Collection.Add(Note);
+        }
+
+        public override void Undo()
+        {
+            Collection.Remove(Note);
+        }
+    }
+
+    public class RemoveDHoldOperation : NoteCollectionOperation<DHold>
+    {
+        public override string Description { get { return "DHOLDの削除"; } }
+
+        public RemoveDHoldOperation(NoteView.NoteCollection collection, DHold note) : base(collection, note)
         {
         }
 

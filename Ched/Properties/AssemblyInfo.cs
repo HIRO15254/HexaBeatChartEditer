@@ -2,13 +2,12 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Ched")]
-[assembly: AssemblyDescription("Yet Another Chart Editor")]
-[assembly: AssemblyCompany("paltee.net")]
-[assembly: AssemblyProduct("Ched")]
-[assembly: AssemblyCopyright("Copyright (C) 2017 Paralleltree")]
+[assembly: AssemblyTitle("HexabeatChartEditer")]
+[assembly: AssemblyDescription("Chart Editer for Hexabeat")]
+[assembly: AssemblyCompany("hiro.net")]
+[assembly: AssemblyProduct("HexabeatChartEditer")]
+[assembly: AssemblyCopyright("Copyright (C) 2020 Hiro15254(original was created by paralleltree)")]
 
 [assembly: ComVisible(false)]
-[assembly: Guid("4c0c9f98-6fcf-4d2f-b821-37a66362dc75")]
 
-[assembly: AssemblyVersion("2.6.3.0")]
+[assembly: AssemblyVersion("1.00")]

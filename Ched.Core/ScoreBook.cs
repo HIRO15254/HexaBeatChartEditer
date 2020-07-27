@@ -139,6 +139,7 @@ namespace Ched.Core
 
             if (fileVersion.Major < 3)
             {
+                /*
                 var notes = doc["score"]["notes"];
                 var types = new[] { notes["airs"], notes["airActions"] }.SelectMany(p => p.Select(q => (JObject)q["parentNote"])).Where(p => p.ContainsKey("$type"));
                 foreach (var obj in types)
@@ -147,6 +148,7 @@ namespace Ched.Core
                     type = System.Text.RegularExpressions.Regex.Replace(type, "Ched$", "Ched.Core").Replace("Components", "Core");
                     obj["$type"] = type;
                 }
+                */
             }
 
             doc["version"] = JObject.FromObject(typeof(ScoreBook).Assembly.GetName().Version);

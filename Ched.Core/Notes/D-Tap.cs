@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Ched.Core.Notes
 {
-    public class ExTap : Tap
+    public class DTap : Tap
     {
+
     }
 }
