@@ -16,8 +16,8 @@ namespace Ched.UI
 {
     public partial class ExportForm : Form
     {
-        private readonly string ArgsKey = "hxc";
-        private readonly string Filter = "Hexabeat Chart file(*.hxc)|*.hxc";
+        private readonly string ArgsKey = "chf";
+        private readonly string Filter = "Hexabeat Chart file(*.chf)|*.chf";
 
         private SusExporter exporter = new SusExporter();
 

@@ -26,7 +26,6 @@ namespace Ched.UI
         public event EventHandler EditModeChanged;
         public event EventHandler SelectedRangeChanged;
         public event EventHandler NewNoteTypeChanged;
-        public event EventHandler AirDirectionChanged;
         public event EventHandler DragScroll;
 
         private Color barLineColor = Color.FromArgb(160, 160, 160);
@@ -45,6 +44,8 @@ namespace Ched.UI
         private int currentTick = 0;
         private SelectionRange selectedRange = SelectionRange.Empty;
         private NoteType newNoteType = NoteType.Tap;
+
+
 
         /// <summary>
         /// 小節の区切り線の色を設定します。
@@ -673,7 +674,7 @@ namespace Ched.UI
                                 Notes.Add(dhold);
                                 Invalidate();
                                 return holdDurationHandler(dhold)
-                                    .Finally(() => OperationManager.Push(new InsertHoldOperation(Notes, dhold)));
+                                    .Finally(() => OperationManager.Push(new InsertDHoldOperation(Notes, dhold)));
                         }
                     }
                     return Observable.Empty<MouseEventArgs>();
@@ -800,7 +801,7 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var op = new RemoveHoldOperation(Notes, hold);
+                            var op = new RemoveDHoldOperation(Notes, hold);
                             Notes.Remove(hold);
                             OperationManager.Push(op);
                             return;
@@ -1246,30 +1247,31 @@ namespace Ched.UI
 
         public void CutSelectedNotes()
         {
-            CopySelectedNotes();
-            RemoveSelectedNotes();
+            //CopySelectedNotes();
+            //RemoveSelectedNotes();
         }
 
         public void CopySelectedNotes()
         {
-            var data = new SelectionData(SelectedRange.StartTick + Math.Min(SelectedRange.Duration, 0), UnitBeatTick, GetSelectedNotes());
-            Clipboard.SetDataObject(data, true);
+            
+            //var data = new SelectionData(SelectedRange.StartTick + Math.Min(SelectedRange.Duration, 0), UnitBeatTick, GetSelectedNotes());
+            //Clipboard.SetDataObject(data, true);
         }
 
         public void PasteNotes()
         {
-            var op = PasteNotes(p => { });
-            if (op == null) return;
-            OperationManager.Push(op);
-            Invalidate();
+            //var op = PasteNotes(p => { });
+            //if (op == null) return;
+            //OperationManager.Push(op);
+            //Invalidate();
         }
 
         public void PasteFlippedNotes()
         {
-            var op = PasteNotes(p => FlipNotes(p.SelectedNotes));
-            if (op == null) return;
-            OperationManager.Push(op);
-            Invalidate();
+            //var op = PasteNotes(p => FlipNotes(p.SelectedNotes));
+            //if (op == null) return;
+            //OperationManager.Push(op);
+            //Invalidate();
         }
 
         /// <summary>
@@ -1296,7 +1298,7 @@ namespace Ched.UI
                 note.Tick = note.Tick - originTick + CurrentTick;
             }
 
-            foreach (var hold in data.SelectedNotes.Holds)
+            foreach (var hold in data.SelectedNotes.GetLongNotes())
             {
                 hold.StartTick = hold.StartTick - originTick + CurrentTick;
             }
@@ -1308,9 +1310,10 @@ namespace Ched.UI
                 .Concat(data.SelectedNotes.Flicks.Select(p => new InsertFlickOperation(Notes, p)))
                 .Concat(data.SelectedNotes.Damages.Select(p => new InsertDamageOperation(Notes, p)))
                 .Concat(data.SelectedNotes.Holds.Select(p => new InsertHoldOperation(Notes, p)))
-                .Concat(data.SelectedNotes.DHolds.Select(p => new InsertHoldOperation(Notes, p)));
+                .Concat(data.SelectedNotes.DHolds.Select(p => new InsertDHoldOperation(Notes, p)));
             var composite = new CompositeOperation("クリップボードからペースト", op.ToList());
             composite.Redo(); // 追加書くの面倒になったので許せ
+
             return composite;
         }
 
@@ -1343,9 +1346,13 @@ namespace Ched.UI
                 Notes.Remove(p);
                 return new RemoveHoldOperation(Notes, p);
             });
-
+            var dholds = selected.DHolds.Select(p =>
+            {
+                Notes.Remove(p);
+                return new RemoveDHoldOperation(Notes, p);
+            });
             var opList = taps.Cast<IOperation>().Concat(extaps).Concat(flicks).Concat(damages)
-                .Concat(holds)
+                .Concat(holds).Concat(dholds)
                 .ToList();
 
             if (opList.Count == 0) return;
@@ -1527,7 +1534,7 @@ namespace Ched.UI
             public int GetLastTick()
             {
                 var shortNotes = Taps.Cast<TappableBase>().Concat(DTaps).Concat(Flicks).Concat(Damages).ToList();
-                var longNotes = Holds.Cast<ILongNote>().ToList();
+                var longNotes = Holds.Cast<ILongNote>().Concat(DHolds).ToList();
                 int lastShortNoteTick = shortNotes.Count == 0 ? 0 : shortNotes.Max(p => p.Tick);
                 int lastLongNoteTick = longNotes.Count == 0 ? 0 : longNotes.Max(p => p.StartTick + p.GetDuration());
                 return Math.Max(lastShortNoteTick, lastLongNoteTick);
@@ -1608,7 +1615,7 @@ namespace Ched.UI
             get
             {
                 CheckRestored();
-                return SelectedNotes.GetShortNotes().Count() == 0 && SelectedNotes.Holds.Count == 0;
+                return SelectedNotes.GetShortNotes().Count() == 0 && SelectedNotes.GetLongNotes().Count() == 0;
             }
         }
 

@@ -33,10 +33,8 @@ namespace Ched.Components.Exporter
                 writer.WriteLine("#DESIGNER \"{0}\"", book.NotesDesignerName);
                 writer.WriteLine("#DIFFICULTY {0}", (int)args.PlayDifficulty + (string.IsNullOrEmpty(args.ExtendedDifficulty) ? "" : ":" + args.ExtendedDifficulty));
                 writer.WriteLine("#PLAYLEVEL {0}", args.PlayLevel);
-                writer.WriteLine("#SONGID \"{0}\"", args.SongId);
                 writer.WriteLine("#WAVE \"{0}\"", args.SoundFileName);
                 writer.WriteLine("#WAVEOFFSET {0}", args.SoundOffset);
-                writer.WriteLine("#JACKET \"{0}\"", args.JacketFilePath);
 
                 writer.WriteLine();
 
@@ -86,14 +84,21 @@ namespace Ched.Components.Exporter
                 }
 
                 writer.WriteLine();
+
+
                 var speeds = book.Score.Events.HighSpeedChangeEvents.Select(p =>
                 {
                     var barPos = barIndexCalculator.GetBarPositionFromTick(p.Tick);
                     return string.Format("{0}'{1}:{2}", args.HasPaddingBar && barPos.BarIndex == 1 && barPos.TickOffset == 0 ? 0 : barPos.BarIndex, barPos.TickOffset, p.SpeedRatio);
                 });
                 writer.WriteLine("#TIL00: \"{0}\"", string.Join(", ", speeds));
-                writer.WriteLine("#HISPEED 00");
-                writer.WriteLine("#MEASUREHS 00");
+
+                foreach(var EventVar in book.Score.Events.HighSpeedChangeEvents)
+                {
+                    var barPos = barIndexCalculator.GetBarPositionFromTick(EventVar.Tick);
+                    writer.Write("#{0:000}07: ", barPos.BarIndex);
+                    writer.WriteLine(EventVar.SpeedRatio);
+                }
 
                 writer.WriteLine();
 

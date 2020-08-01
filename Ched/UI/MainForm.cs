@@ -65,7 +65,7 @@ namespace Ched.UI
             }
         }
 
-        private bool CanWidenLaneWidth => !IsPreviewMode && NoteView.UnitLaneWidth < 24;
+        private bool CanWidenLaneWidth => !IsPreviewMode && NoteView.UnitLaneWidth < 48;
         private bool CanNarrowLaneWidth => !IsPreviewMode && NoteView.UnitLaneWidth > 12;
         private bool CanZoomIn => !IsPreviewMode && NoteView.UnitBeatHeight < 960;
         private bool CanZoomOut => !IsPreviewMode && NoteView.UnitBeatHeight > 30;
@@ -74,7 +74,7 @@ namespace Ched.UI
         public MainForm()
         {
             InitializeComponent();
-            Size = new Size(420, 700);
+            Size = new Size(480, 700);
             Icon = Resources.MainIcon;
 
             ToolStripManager.RenderMode = ToolStripManagerRenderMode.System;
@@ -255,6 +255,7 @@ namespace Ched.UI
             var events = book.Score.Events;
             events.BPMChangeEvents.Add(new BPMChangeEvent() { Tick = 0, BPM = 120 });
             events.TimeSignatureChangeEvents.Add(new TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2 });
+            events.HighSpeedChangeEvents.Add(new HighSpeedChangeEvent() { Tick = 0, SpeedRatio = (decimal)1.00 });
             LoadBook(book);
         }
 

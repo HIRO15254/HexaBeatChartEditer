@@ -89,7 +89,7 @@ namespace Ched.Core
         }
         public IEnumerable<Hold> GetLongNotes()
         {
-            return Taps.Cast<Hold>().Concat(DHolds);
+            return Holds.Cast<Hold>().Concat(DHolds);
         }
 
         public void UpdateTicksPerBeat(double factor)
