@@ -126,40 +126,17 @@ namespace Ched.Core
             var doc = JObject.Parse(data);
             var fileVersion = GetFileVersion(path);
 
-            if (fileVersion.Major < 2)
-            {
-                // Major = 2用の変換
-                foreach (var slide in doc["score"]["notes"]["slides"])
-                {
-                    var obj = (JObject)slide;
-                    slide["startWidth"] = obj.Property("width").Value;
-                    obj.Property("width").Remove();
-                }
-            }
-
-            if (fileVersion.Major < 3)
-            {
-                /*
-                var notes = doc["score"]["notes"];
-                var types = new[] { notes["airs"], notes["airActions"] }.SelectMany(p => p.Select(q => (JObject)q["parentNote"])).Where(p => p.ContainsKey("$type"));
-                foreach (var obj in types)
-                {
-                    string type = obj["$type"].ToString();
-                    type = System.Text.RegularExpressions.Regex.Replace(type, "Ched$", "Ched.Core").Replace("Components", "Core");
-                    obj["$type"] = type;
-                }
-                */
-            }
-
             doc["version"] = JObject.FromObject(typeof(ScoreBook).Assembly.GetName().Version);
 
-            var res = doc.ToObject<ScoreBook>(JsonSerializer.Create(SerializerSettings));
+            //var res = doc.ToObject<ScoreBook>(JsonSerializer.Create(SerializerSettings));
+            var res = doc.ToObject<ScoreBook>();
             // 循環参照は復元できないねん……
 
             if (res.Score.Events.TimeSignatureChangeEvents.Count == 0)
             {
                 res.Score.Events.TimeSignatureChangeEvents.Add(new Events.TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2 });
             }
+            res.score.Notes.Taps = res.score.Notes.Taps.Distinct().ToList();
 
             res.Path = path;
             return res;

@@ -1293,6 +1293,7 @@ namespace Ched.UI
             if (data.TicksPerBeat != UnitBeatTick)
                 data.SelectedNotes.UpdateTicksPerBeat(tickFactor);
 
+            data.SelectedNotes.Taps = data.SelectedNotes.Taps.Distinct().ToList();
             foreach (var note in data.SelectedNotes.GetShortNotes())
             {
                 note.Tick = note.Tick - originTick + CurrentTick;
@@ -1304,6 +1305,7 @@ namespace Ched.UI
             }
 
             action(data);
+
 
             var op = data.SelectedNotes.Taps.Select(p => new InsertTapOperation(Notes, p)).Cast<IOperation>()
                 .Concat(data.SelectedNotes.DTaps.Select(p => new InsertDTapOperation(Notes, p)))
