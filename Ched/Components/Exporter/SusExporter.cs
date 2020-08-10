@@ -38,10 +38,6 @@ namespace Ched.Components.Exporter
 
                 writer.WriteLine();
 
-                writer.WriteLine("#REQUEST \"ticks_per_beat {0}\"", book.Score.TicksPerBeat);
-
-                writer.WriteLine();
-
                 int barTick = book.Score.TicksPerBeat * 4;
                 var barIndexCalculator = new BarIndexCalculator(barTick, book.Score.Events.TimeSignatureChangeEvents, args.HasPaddingBar);
 
@@ -84,14 +80,6 @@ namespace Ched.Components.Exporter
                 }
 
                 writer.WriteLine();
-
-
-                var speeds = book.Score.Events.HighSpeedChangeEvents.Select(p =>
-                {
-                    var barPos = barIndexCalculator.GetBarPositionFromTick(p.Tick);
-                    return string.Format("{0}'{1}:{2}", args.HasPaddingBar && barPos.BarIndex == 1 && barPos.TickOffset == 0 ? 0 : barPos.BarIndex, barPos.TickOffset, p.SpeedRatio);
-                });
-                writer.WriteLine("#TIL00: \"{0}\"", string.Join(", ", speeds));
 
                 foreach(var EventVar in book.Score.Events.HighSpeedChangeEvents)
                 {

@@ -17,7 +17,7 @@ namespace Ched.Drawing
             dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.TapColor, dc.ColorProfile.BorderColor);
         }
 
-        public static void DrawExTap(this DrawingContext dc, RectangleF rect)
+        public static void DrawDTap(this DrawingContext dc, RectangleF rect)
         {
             dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.DTapColor, dc.ColorProfile.BorderColor);
         }
@@ -90,7 +90,7 @@ namespace Ched.Drawing
                 var blend = new ColorBlend(5)
                 {
                     Colors = new Color[] { BackgroundEdgeColor, BackgroundMiddleColor, BackgroundEdgeColor, BackgroundMiddleColor, BackgroundEdgeColor },
-                    Positions = new float[] { 0.0f,0.3f, 0.5f,0.7f, 1.0f }
+                    Positions = new float[] { 0.0f ,0.3f, 0.5f,0.7f, 1.0f }
                 };
                 brush.InterpolationColors = blend;
                 dc.Graphics.FillRectangle(brush, rect2);

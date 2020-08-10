@@ -62,11 +62,11 @@ namespace Ched.UI.Operations
         }
     }
 
-    public class InsertExTapOperation : NoteCollectionOperation<DTap>
+    public class InsertDTapOperation : NoteCollectionOperation<DTap>
     {
         public override string Description { get { return "DTAPの追加"; } }
 
-        public InsertExTapOperation(NoteView.NoteCollection collection, DTap note) : base(collection, note)
+        public InsertDTapOperation(NoteView.NoteCollection collection, DTap note) : base(collection, note)
         {
         }
 
@@ -81,11 +81,11 @@ namespace Ched.UI.Operations
         }
     }
 
-    public class RemoveExTapOperation : NoteCollectionOperation<DTap>
+    public class RemoveDTapOperation : NoteCollectionOperation<DTap>
     {
         public override string Description { get { return "DTAPの削除"; } }
 
-        public RemoveExTapOperation(NoteView.NoteCollection collection, DTap note) : base(collection, note)
+        public RemoveDTapOperation(NoteView.NoteCollection collection, DTap note) : base(collection, note)
         {
         }
 

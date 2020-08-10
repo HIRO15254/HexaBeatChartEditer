@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ched", "Ched\Ched.csproj", "{4C0C9F98-6FCF-4D2F-B821-37A66362DC75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexabeatChartEditer", "Ched\HexabeatChartEditer.csproj", "{4C0C9F98-6FCF-4D2F-B821-37A66362DC75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ched.Drawing", "Ched.Drawing\Ched.Drawing.csproj", "{A41EA7D5-9776-421B-A338-DD662287069B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexabeatChartEditer.Drawing", "Ched.Drawing\HexabeatChartEditer.Drawing.csproj", "{A41EA7D5-9776-421B-A338-DD662287069B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ched.Core", "Ched.Core\Ched.Core.csproj", "{5A5FF947-79DC-4352-94D5-EEC14065F93A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexabeatChartEditer.Core", "Ched.Core\HexabeatChartEditer.Core.csproj", "{5A5FF947-79DC-4352-94D5-EEC14065F93A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ched.Plugins", "Ched.Plugins\Ched.Plugins.csproj", "{BD335AFA-195D-4C2A-986A-167438C81976}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexabeatChartEditer.Plugins", "Ched.Plugins\HexabeatChartEditer.Plugins.csproj", "{BD335AFA-195D-4C2A-986A-167438C81976}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C489BE23-2C22-406E-94E3-E8C85EA9B63D}
 	EndGlobalSection
 EndGlobal

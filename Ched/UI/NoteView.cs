@@ -613,10 +613,10 @@ namespace Ched.UI
                                 break;
 
                             case NoteType.DTap:
-                                var extap = new DTap();
-                                Notes.Add(extap);
-                                newNote = extap;
-                                op = new InsertExTapOperation(Notes, extap);
+                                var dtap = new DTap();
+                                Notes.Add(dtap);
+                                newNote = dtap;
+                                op = new InsertDTapOperation(Notes, dtap);
                                 break;
 
                             case NoteType.Flick:
@@ -753,7 +753,7 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var op = new RemoveExTapOperation(Notes, note);
+                            var op = new RemoveDTapOperation(Notes, note);
                             Notes.Remove(note);
                             OperationManager.Push(op);
                             return;
@@ -1042,7 +1042,7 @@ namespace Ched.UI
                 dc.DrawDHoldBegin(GetRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width));
             }
 
-            // TAP, ExTAP, FLICK, DAMAGE
+            // TAP, DTAP, FLICK, DAMAGE
             foreach (var note in Notes.Flicks.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
             {
                 dc.DrawFlick(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));
@@ -1055,7 +1055,7 @@ namespace Ched.UI
 
             foreach (var note in Notes.DTaps.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
             {
-                dc.DrawExTap(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));
+                dc.DrawDTap(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));
             }
 
             foreach (var note in Notes.Damages.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
@@ -1247,31 +1247,31 @@ namespace Ched.UI
 
         public void CutSelectedNotes()
         {
-            //CopySelectedNotes();
-            //RemoveSelectedNotes();
+            CopySelectedNotes();
+            RemoveSelectedNotes();
         }
 
         public void CopySelectedNotes()
         {
             
-            //var data = new SelectionData(SelectedRange.StartTick + Math.Min(SelectedRange.Duration, 0), UnitBeatTick, GetSelectedNotes());
-            //Clipboard.SetDataObject(data, true);
+            var data = new SelectionData(SelectedRange.StartTick + Math.Min(SelectedRange.Duration, 0), UnitBeatTick, GetSelectedNotes());
+            Clipboard.SetDataObject(data, true);
         }
 
         public void PasteNotes()
         {
-            //var op = PasteNotes(p => { });
-            //if (op == null) return;
-            //OperationManager.Push(op);
-            //Invalidate();
+            var op = PasteNotes(p => { });
+            if (op == null) return;
+            OperationManager.Push(op);
+            Invalidate();
         }
 
         public void PasteFlippedNotes()
         {
-            //var op = PasteNotes(p => FlipNotes(p.SelectedNotes));
-            //if (op == null) return;
-            //OperationManager.Push(op);
-            //Invalidate();
+            var op = PasteNotes(p => FlipNotes(p.SelectedNotes));
+            if (op == null) return;
+            OperationManager.Push(op);
+            Invalidate();
         }
 
         /// <summary>
@@ -1306,7 +1306,7 @@ namespace Ched.UI
             action(data);
 
             var op = data.SelectedNotes.Taps.Select(p => new InsertTapOperation(Notes, p)).Cast<IOperation>()
-                .Concat(data.SelectedNotes.DTaps.Select(p => new InsertExTapOperation(Notes, p)))
+                .Concat(data.SelectedNotes.DTaps.Select(p => new InsertDTapOperation(Notes, p)))
                 .Concat(data.SelectedNotes.Flicks.Select(p => new InsertFlickOperation(Notes, p)))
                 .Concat(data.SelectedNotes.Damages.Select(p => new InsertDamageOperation(Notes, p)))
                 .Concat(data.SelectedNotes.Holds.Select(p => new InsertHoldOperation(Notes, p)))
@@ -1326,10 +1326,10 @@ namespace Ched.UI
                 Notes.Remove(p);
                 return new RemoveTapOperation(Notes, p);
             });
-            var extaps = selected.DTaps.Select(p =>
+            var dtaps = selected.DTaps.Select(p =>
             {
                 Notes.Remove(p);
-                return new RemoveExTapOperation(Notes, p);
+                return new RemoveDTapOperation(Notes, p);
             });
             var flicks = selected.Flicks.Select(p =>
             {
@@ -1351,7 +1351,7 @@ namespace Ched.UI
                 Notes.Remove(p);
                 return new RemoveDHoldOperation(Notes, p);
             });
-            var opList = taps.Cast<IOperation>().Concat(extaps).Concat(flicks).Concat(damages)
+            var opList = taps.Cast<IOperation>().Concat(dtaps).Concat(flicks).Concat(damages)
                 .Concat(holds).Concat(dholds)
                 .ToList();
 

@@ -22,7 +22,7 @@ namespace Ched.Plugins
             var sb = new StringBuilder();
             sb.AppendLine(string.Format("総コンボ数: {0}", combo.Total));
             sb.AppendLine(string.Format("TAP: {0}", combo.Tap));
-            sb.AppendLine(string.Format("DTAP: {0}", combo.Tap));
+            sb.AppendLine(string.Format("DTAP: {0}", combo.DTap));
             sb.AppendLine(string.Format("HOLD: {0}", combo.Hold));
             sb.AppendLine(string.Format("DHOLD: {0}", combo.DHold));
 

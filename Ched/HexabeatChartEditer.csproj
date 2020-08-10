@@ -421,17 +421,17 @@
     <None Include="Resources\scissors-blue.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ched.Core\Ched.Core.csproj">
+    <ProjectReference Include="..\Ched.Core\HexabeatChartEditer.Core.csproj">
       <Project>{5a5ff947-79dc-4352-94d5-eec14065f93a}</Project>
-      <Name>Ched.Core</Name>
+      <Name>HexabeatChartEditer.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ched.Drawing\Ched.Drawing.csproj">
+    <ProjectReference Include="..\Ched.Drawing\HexabeatChartEditer.Drawing.csproj">
       <Project>{a41ea7d5-9776-421b-a338-dd662287069b}</Project>
-      <Name>Ched.Drawing</Name>
+      <Name>HexabeatChartEditer.Drawing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ched.Plugins\Ched.Plugins.csproj">
+    <ProjectReference Include="..\Ched.Plugins\HexabeatChartEditer.Plugins.csproj">
       <Project>{bd335afa-195d-4c2a-986a-167438c81976}</Project>
-      <Name>Ched.Plugins</Name>
+      <Name>HexabeatChartEditer.Plugins</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

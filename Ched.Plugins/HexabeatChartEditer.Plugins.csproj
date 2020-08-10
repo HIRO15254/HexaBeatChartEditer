@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A41EA7D5-9776-421B-A338-DD662287069B}</ProjectGuid>
+    <ProjectGuid>{BD335AFA-195D-4C2A-986A-167438C81976}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ched.Drawing</RootNamespace>
-    <AssemblyName>Ched.Drawing</AssemblyName>
+    <RootNamespace>Ched.Plugins</RootNamespace>
+    <AssemblyName>Ched.Plugins</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -52,24 +52,21 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ColorProfile.cs" />
-    <Compile Include="ComponentGraphics.cs" />
-    <Compile Include="DrawingContext.cs" />
-    <Compile Include="GraphicsExtensions.cs" />
-    <Compile Include="NoteGraphics.cs" />
+    <Compile Include="IScoreBookImportPlugin.cs" />
+    <Compile Include="IPlugin.cs" />
+    <Compile Include="IScorePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ched.Core\Ched.Core.csproj">
+    <ProjectReference Include="..\Ched.Core\HexabeatChartEditer.Core.csproj">
       <Project>{5a5ff947-79dc-4352-94d5-eec14065f93a}</Project>
-      <Name>Ched.Core</Name>
+      <Name>HexabeatChartEditer.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Ched.Drawing.nuspec" />
+    <None Include="Ched.Plugins.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
