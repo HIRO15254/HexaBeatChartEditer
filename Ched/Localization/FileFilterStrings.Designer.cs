@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Ched.Localization {
+namespace HexaBeatChartEditer.Localization {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Ched.Localization {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Ched.Localization.FileFilterStrings", typeof(FileFilterStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("HexaBeatChartEditer.Localization.FileFilterStrings", typeof(FileFilterStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -72,9 +72,9 @@ namespace Ched.Localization {
         /// <summary>
         ///   HexabeatChartEditer専用形式 に類似しているローカライズされた文字列を検索します。
         /// </summary>
-        internal static string ChedFilter {
+        internal static string HexaBeatChartEditerFilter {
             get {
-                return ResourceManager.GetString("ChedFilter", resourceCulture);
+                return ResourceManager.GetString("HexaBeatChartEditerFilter", resourceCulture);
             }
         }
     }

@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
 
-using Ched.UI;
+using HexaBeatChartEditer.UI;
 
-namespace Ched.Configuration
+namespace HexaBeatChartEditer.Configuration
 {
     internal sealed class SoundSettings : SettingsBase
     {

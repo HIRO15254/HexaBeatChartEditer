@@ -7,8 +7,8 @@
     <ProjectGuid>{4C0C9F98-6FCF-4D2F-B821-37A66362DC75}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ched</RootNamespace>
-    <AssemblyName>Ched</AssemblyName>
+    <RootNamespace>HexaBeatChartEditer</RootNamespace>
+    <AssemblyName>HexaBeatChartEditer</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -248,7 +248,9 @@
       <LastGenOutput>ErrorStrings.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Localization\FileFilterStrings.en.resx" />
+    <EmbeddedResource Include="Localization\FileFilterStrings.en.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Localization\FileFilterStrings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>FileFilterStrings.Designer.cs</LastGenOutput>
@@ -285,6 +287,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\BookPropertiesForm.resx">
       <DependentUpon>BookPropertiesForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\BPMSelectionForm.en.resx">
       <DependentUpon>BPMSelectionForm.cs</DependentUpon>
@@ -312,6 +315,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\SoundSourceSelector.en.resx">
       <DependentUpon>SoundSourceSelector.cs</DependentUpon>
@@ -450,6 +454,27 @@
     <None Include="Resources\d-hold.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Editer_icon_Dhold1.png" />
+    <None Include="Resources\Editer_icon_Dtap1.png" />
+    <None Include="Resources\Editer_icon_DTrace1.png" />
+    <None Include="Resources\Editer_icon_Hhold1.png" />
+    <None Include="Resources\Editer_icon_hold1.png" />
+    <None Include="Resources\Editer_icon_Htap1.png" />
+    <None Include="Resources\Editer_icon_HTrace1.png" />
+    <None Include="Resources\Editer_icon_Ltap1.png" />
+    <None Include="Resources\Editer_icon_LTrace1.png" />
+    <None Include="Resources\Editer_icon_Trace.png" />
+    <None Include="Resources\Editer_icon_Dhold.png" />
+    <None Include="Resources\Editer_icon_Dtap.png" />
+    <None Include="Resources\Editer_icon_DTrace.png" />
+    <None Include="Resources\Editer_icon_Hhold.png" />
+    <None Include="Resources\Editer_icon_hold.png" />
+    <None Include="Resources\Editer_icon_Htap.png" />
+    <None Include="Resources\Editer_icon_HTrace.png" />
+    <None Include="Resources\Editer_icon_Lhold.png" />
+    <None Include="Resources\Editer_icon_Ltap.png" />
+    <None Include="Resources\Editer_icon_LTrace.png" />
+    <None Include="Resources\Editer_icon_tap.png" />
     <Content Include="Resources\icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     // https://arstechnica.com/civis/viewtopic.php?f=20&t=311656
     public class CheckableToolStripSplitButton : ToolStripSplitButton

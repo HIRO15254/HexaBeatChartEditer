@@ -9,9 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using Ched.Localization;
+using HexaBeatChartEditer.Localization;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     public partial class SoundSourceSelector : UserControl
     {

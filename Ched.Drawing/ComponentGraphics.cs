@@ -6,11 +6,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Drawing
+namespace HexaBeatChartEditer.Drawing
 {
     internal static class ComponentGraphics
     {
         public static void DrawTappableNote(this Graphics g, RectangleF rect, GradientColor foregroundColors, GradientColor borderColors)
+        {
+            g.DrawNote(rect, foregroundColors, borderColors);
+        }
+
+        public static void DrawTraceNote(this Graphics g, RectangleF rect, GradientColor foregroundColors, GradientColor borderColors)
         {
             g.DrawNote(rect, foregroundColors, borderColors);
         }
@@ -23,6 +28,7 @@ namespace Ched.Drawing
 
         public static void DrawNoteBase(this Graphics g, RectangleF rect, GradientColor colors)
         {
+
             using (var path = rect.ToRoundedPath(rect.Height * 0.5f))
             {
                 using (var brush = new LinearGradientBrush(rect, colors.DarkColor, colors.LightColor, LinearGradientMode.Vertical))

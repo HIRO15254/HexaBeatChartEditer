@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     internal static class GraphicsExtensions
     {

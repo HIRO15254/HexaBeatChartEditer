@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Reflection;
-using Ched.Properties;
+using HexaBeatChartEditer.Properties;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     public partial class VersionInfoForm : Form
     {

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Ched.Core;
-using Ched.UI;
+using HexaBeatChartEditer.Core;
+using HexaBeatChartEditer.UI;
 
-namespace Ched.Plugins
+namespace HexaBeatChartEditer.Plugins
 {
     /// <summary>
     /// 譜面データを扱うプラグインを表します。

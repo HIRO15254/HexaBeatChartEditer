@@ -5,9 +5,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-using Ched.Core;
+using HexaBeatChartEditer.Core;
 
-namespace Ched.Plugins
+namespace HexaBeatChartEditer.Plugins
 {
     /// <summary>
     /// 譜面データのインポートを行うプラグインを表します。

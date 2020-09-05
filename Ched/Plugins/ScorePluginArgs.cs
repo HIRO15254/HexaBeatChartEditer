@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Ched.Core;
-using Ched.Core.Events;
-using Ched.UI;
+using HexaBeatChartEditer.Core;
+using HexaBeatChartEditer.Core.Events;
+using HexaBeatChartEditer.UI;
 
-namespace Ched.Plugins
+namespace HexaBeatChartEditer.Plugins
 {
     public class ScorePluginArgs : IScorePluginArgs
     {

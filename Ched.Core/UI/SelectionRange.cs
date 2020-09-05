@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Ched.Core;
+using HexaBeatChartEditer.Core;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     /// <summary>
     /// 選択範囲を表します。

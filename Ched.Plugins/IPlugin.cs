@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Plugins
+namespace HexaBeatChartEditer.Plugins
 {
     /// <summary>
     /// アプリケーションで利用可能なプラグインを表します。

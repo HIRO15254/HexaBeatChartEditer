@@ -120,7 +120,7 @@
   <data name="AudioFilter" xml:space="preserve">
     <value>Audio File</value>
   </data>
-  <data name="ChedFilter" xml:space="preserve">
-    <value>Ched File Format</value>
+  <data name="HexaBeatChartEditerFilter" xml:space="preserve">
+    <value>HexaBeatChartEditer File Format</value>
   </data>
 </root>

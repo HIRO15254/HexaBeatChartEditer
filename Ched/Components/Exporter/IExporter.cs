@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Ched.Core;
+using HexaBeatChartEditer.Core;
 
-namespace Ched.Components.Exporter
+namespace HexaBeatChartEditer.Components.Exporter
 {
     /// <summary>
     /// エクスポート可能な形式を表すインターフェースです。

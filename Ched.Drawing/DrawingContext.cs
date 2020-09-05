@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Drawing
+namespace HexaBeatChartEditer.Drawing
 {
     public class DrawingContext
     {

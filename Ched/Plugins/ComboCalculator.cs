@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using Ched.Core;
-using Ched.Core.Notes;
-using Ched.Localization;
+using HexaBeatChartEditer.Core;
+using HexaBeatChartEditer.Core.Notes;
+using HexaBeatChartEditer.Localization;
 
-namespace Ched.Plugins
+namespace HexaBeatChartEditer.Plugins
 {
     public class ComboCalculator : IScorePlugin
     {
@@ -23,8 +23,16 @@ namespace Ched.Plugins
             sb.AppendLine(string.Format("総コンボ数: {0}", combo.Total));
             sb.AppendLine(string.Format("TAP: {0}", combo.Tap));
             sb.AppendLine(string.Format("DTAP: {0}", combo.DTap));
+            sb.AppendLine(string.Format("HTAP: {0}", combo.HTap));
+            sb.AppendLine(string.Format("LTAP: {0}", combo.LTap));
+            sb.AppendLine(string.Format("TRACE: {0}", combo.Trace));
+            sb.AppendLine(string.Format("DTRACE: {0}", combo.DTrace));
+            sb.AppendLine(string.Format("HTRACE: {0}", combo.HTrace));
+            sb.AppendLine(string.Format("LTRACE: {0}", combo.LTrace));
             sb.AppendLine(string.Format("HOLD: {0}", combo.Hold));
             sb.AppendLine(string.Format("DHOLD: {0}", combo.DHold));
+            sb.AppendLine(string.Format("HHOLD: {0}", combo.HHold));
+            sb.AppendLine(string.Format("LHOLD: {0}", combo.LHold));
 
             MessageBox.Show(sb.ToString(), DisplayName);
         }
@@ -32,76 +40,46 @@ namespace Ched.Plugins
         protected ComboDetails CalculateCombo(Score score)
         {
             var combo = new ComboDetails();
-            combo.Tap += new int[]
-            {
-                score.Notes.Taps.Count,
-                score.Notes.Damages.Count,
-                score.Notes.Holds.Count
-            }.Sum();
 
-            combo.DTap += new int[]
-            {
-                score.Notes.DTaps.Count,
-                score.Notes.DHolds.Count
-            }.Sum();
+            combo.Tap = score.Notes.Taps.Count / 2;
+            combo.DTap = score.Notes.DTaps.Count;
+            combo.HTap = score.Notes.HTaps.Count;
+            combo.LTap = score.Notes.LTaps.Count;
 
+            combo.Trace = score.Notes.Traces.Count;
+            combo.DTrace = score.Notes.DTraces.Count;
+            combo.HTrace = score.Notes.HTraces.Count;
+            combo.LTrace = score.Notes.LTraces.Count;
 
-            int barTick = 4 * score.TicksPerBeat;
-            var bpmEvents = score.Events.BPMChangeEvents.OrderBy(p => p.Tick).ToList();
-            Func<int, decimal> getHeadBpmAt = tick => (bpmEvents.LastOrDefault(p => p.Tick <= tick) ?? bpmEvents[0]).BPM;
-            Func<int, decimal> getTailBpmAt = tick => (bpmEvents.LastOrDefault(p => p.Tick < tick) ?? bpmEvents[0]).BPM;
-            Func<decimal, int> comboDivider = bpm => bpm < 120 ? 16 : (bpm < 240 ? 8 : 4);
-
-            // コンボとしてカウントされるstartTickからのオフセットを求める
-            Func<int, IEnumerable<int>, List<int>> calcComboTicks = (startTick, stepTicks) =>
-            {
-                var tickList = new List<int>();
-                var sortedStepTicks = stepTicks.OrderBy(p => p).ToList();
-                int duration = sortedStepTicks[sortedStepTicks.Count - 1];
-                int head = 0;
-                int bpmIndex = 0;
-                int stepIndex = 0;
-
-                while (head < duration)
-                {
-                    while (bpmIndex + 1 < bpmEvents.Count && startTick + head >= bpmEvents[bpmIndex + 1].Tick) bpmIndex++;
-                    int interval = barTick / comboDivider(bpmEvents[bpmIndex].BPM);
-                    int diff = Math.Min(interval, sortedStepTicks[stepIndex] - head);
-                    head += diff;
-                    tickList.Add(head);
-                    if (head == sortedStepTicks[stepIndex]) stepIndex++;
-                }
-
-                return tickList;
-            };
-            Func<IEnumerable<int>, int, int, IEnumerable<int>> removeLostTicks = (ticks, startTick, duration) =>
-            {
-                int interval = barTick / comboDivider(getTailBpmAt(startTick + duration));
-                return ticks.Where(p => p <= duration - interval).ToList();
-            };
-
-            foreach (var hold in score.Notes.Holds)
-            {
-                var tickList = new HashSet<int>(calcComboTicks(hold.StartTick, new int[] { hold.Duration }));
-                combo.Hold += tickList.Count;
-            }
-
-            foreach (var hold in score.Notes.DHolds)
-            {
-                var tickList = new HashSet<int>(calcComboTicks(hold.StartTick, new int[] { hold.Duration }));
-                combo.DHold += tickList.Count;
-            }
+            combo.Hold = score.Notes.Holds.Count;
+            combo.DHold = score.Notes.DHolds.Count;
+            combo.HHold = score.Notes.HHolds.Count;
+            combo.LHold = score.Notes.LHolds.Count;
 
             return combo;
         }
+       
 
         public struct ComboDetails
         {
-            public int Total => Tap +  DTap + Hold + DHold;
+            public int Total => TapTotal + TraceTotal + HoldTotal;
+
+            public int TapTotal => Tap + DTap + HTap + LTap;
+            public int HoldTotal => Hold + DHold + HHold + LHold;
+            public int TraceTotal => Trace +  DTrace + HTrace + LTrace;
+
             public int Tap { get; set; }
             public int DTap { get; set; }
+            public int HTap { get; set; }
+            public int LTap { get; set; }
+            public int Trace { get; set; }
+            public int DTrace { get; set; }
+            public int HTrace { get; set; }
+            public int LTrace { get; set; }
             public int Hold { get; set; }
             public int DHold { get; set; }
+            public int HHold { get; set; }
+            public int LHold { get; set; }
         }
     }
 }

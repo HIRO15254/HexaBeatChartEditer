@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.UI.Operations
+namespace HexaBeatChartEditer.UI.Operations
 {
     /// <summary>
     /// 操作を管理するクラスです。

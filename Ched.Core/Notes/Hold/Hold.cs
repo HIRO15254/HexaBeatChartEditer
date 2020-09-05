@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Core.Notes
+namespace HexaBeatChartEditer.Core.Notes
 {
     [Newtonsoft.Json.JsonObject(Newtonsoft.Json.MemberSerialization.OptIn)]
     public class Hold : MovableLongNoteBase
@@ -78,6 +78,16 @@ namespace Ched.Core.Notes
 
         public StartTap StartNote { get { return startNote; } }
         public EndTap EndNote { get { return endNote; } }
+
+        public override bool Equals(object obj)
+        {
+            var p = obj as Hold;
+            if (p == null)
+                return false;
+            return (this.startNote.Tick == p.startNote.Tick && this.laneIndex == p.laneIndex);
+        }
+
+        public override int GetHashCode() => startNote.Tick.GetHashCode() ^ laneIndex.GetHashCode();
 
         public Hold()
         {

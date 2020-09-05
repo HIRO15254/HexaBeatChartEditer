@@ -9,21 +9,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using Ched.Core.Notes;
-using Ched.Core;
-using Ched.Core.Events;
-using Ched.Configuration;
-using Ched.Localization;
-using Ched.Plugins;
-using Ched.Properties;
-using Ched.UI.Operations;
+using HexaBeatChartEditer.Core.Notes;
+using HexaBeatChartEditer.Core;
+using HexaBeatChartEditer.Core.Events;
+using HexaBeatChartEditer.Configuration;
+using HexaBeatChartEditer.Localization;
+using HexaBeatChartEditer.Plugins;
+using HexaBeatChartEditer.Properties;
+using HexaBeatChartEditer.UI.Operations;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     public partial class MainForm : Form
     {
         private readonly string FileExtension = ".hce";
-        private string FileTypeFilter => FileFilterStrings.ChedFilter + string.Format("({0})|{1}", "*" + FileExtension, "*" + FileExtension);
+        private string FileTypeFilter => FileFilterStrings.HexaBeatChartEditerFilter + string.Format("({0})|{1}", "*" + FileExtension, "*" + FileExtension);
 
         private bool isPreviewMode;
 
@@ -417,6 +417,7 @@ namespace Ched.UI
             var flipSelectedNotesItem = new MenuItem(MainFormStrings.FlipSelectedNotes, (s, e) => noteView.FlipSelectedNotes());
             var removeSelectedNotesItem = new MenuItem(MainFormStrings.RemoveSelectedNotes, (s, e) => noteView.RemoveSelectedNotes(), Shortcut.Del);
 
+
             var removeEventsItem = new MenuItem(MainFormStrings.RemoveEvents, (s, e) =>
             {
                 int minTick = noteView.SelectedRange.StartTick + (noteView.SelectedRange.Duration < 0 ? noteView.SelectedRange.Duration : 0);
@@ -446,15 +447,7 @@ namespace Ched.UI
                 noteView.Invalidate();
             });
 
-            var insertAirWithAirActionItem = new MenuItem(MainFormStrings.InsertAirWithAirAction, (s, e) =>
-            {
-                var item = s as MenuItem;
-                item.Checked = !item.Checked;
-                ApplicationSettings.Default.InsertAirWithAirAction = item.Checked;
-            })
-            {
-                Checked = ApplicationSettings.Default.InsertAirWithAirAction
-            };
+
 
             var pluginItems = PluginManager.ScorePlugins.Select(p => new MenuItem(p.DisplayName, (s, e) =>
             {
@@ -480,14 +473,22 @@ namespace Ched.UI
                     MessageBox.Show(this, ErrorStrings.PluginException, Program.ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             })).ToArray();
+
             var pluginItem = new MenuItem(MainFormStrings.Plugin, pluginItems);
+
+            var RefrashItem = new MenuItem(MainFormStrings.Refresh, (s, e) =>
+            {
+                SaveFile();
+                LoadFile(ScoreBook.Path);
+
+            }, Shortcut.CtrlR);
 
             var editMenuItems = new MenuItem[]
             {
                 undoItem, redoItem, new MenuItem("-"),
                 cutItem, copyItem, pasteItem, pasteFlippedItem, new MenuItem("-"),
                 flipSelectedNotesItem, removeSelectedNotesItem, removeEventsItem, new MenuItem("-"),
-                insertAirWithAirActionItem, new MenuItem("-"),
+                RefrashItem,
                 pluginItem
             };
 
@@ -507,6 +508,7 @@ namespace Ched.UI
                 WidenLaneWidthMenuItem.Enabled = CanWidenLaneWidth;
                 NarrowLaneWidthMenuItem.Enabled = CanNarrowLaneWidth;
             };
+
             NarrowLaneWidthMenuItem.Click += (s, e) =>
             {
                 noteView.UnitLaneWidth -= 4;
@@ -582,6 +584,7 @@ namespace Ched.UI
                 noteView.ScoreEvents.HighSpeedChangeEvents.Add(item);
                 noteView.Invalidate();
             });
+
 
             var insertTimeSignatureItem = new MenuItem(MainFormStrings.TimeSignature, (s, e) =>
             {
@@ -680,7 +683,7 @@ namespace Ched.UI
 
             var helpMenuItems = new MenuItem[]
             {
-                new MenuItem(MainFormStrings.Help, (s, e) => System.Diagnostics.Process.Start("https://github.com/paralleltree/Ched/wiki"), Shortcut.F1),
+                new MenuItem(MainFormStrings.Help, (s, e) => System.Diagnostics.Process.Start("https://github.com/paralleltree/HexaBeatChartEditer/wiki"), Shortcut.F1),
                 new MenuItem(MainFormStrings.VersionInfo, (s, e) => new VersionInfoForm().ShowDialog(this))
             };
 
@@ -842,6 +845,30 @@ namespace Ched.UI
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
+            var hTapButton = new ToolStripButton("HTAP", Resources.HTapIcon, (s, e) => noteView.NewNoteType = NoteType.HTap)
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
+            var lTapButton = new ToolStripButton("LTAP", Resources.LTapIcon, (s, e) => noteView.NewNoteType = NoteType.LTap)
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
+            var TraceButton = new ToolStripButton("TRACE", Resources.TraceIcon, (s, e) => noteView.NewNoteType = NoteType.Trace)
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
+            var dTraceButton = new ToolStripButton("DTRACE", Resources.DTraceIcon, (s, e) => noteView.NewNoteType = NoteType.DTrace)
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
+            var hTraceButton = new ToolStripButton("HTRACE", Resources.HTraceIcon, (s, e) => noteView.NewNoteType = NoteType.HTrace)
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
+            var lTraceButton = new ToolStripButton("LTRACE", Resources.LTraceIcon, (s, e) => noteView.NewNoteType = NoteType.LTrace)
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
             var holdButton = new ToolStripButton("HOLD", Resources.HoldIcon, (s, e) => noteView.NewNoteType = NoteType.Hold)
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
@@ -850,6 +877,15 @@ namespace Ched.UI
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
+            var hHoldButton = new ToolStripButton("HHOLD", Resources.HHoldIcon, (s, e) => noteView.NewNoteType = NoteType.HHold)
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
+            var lHoldButton = new ToolStripButton("LHOLD", Resources.LHoldIcon, (s, e) => noteView.NewNoteType = NoteType.LHold)
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
+
 
             var quantizeTicks = new int[]
             {
@@ -886,13 +922,21 @@ namespace Ched.UI
             {
                 tapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Tap);
                 dTapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.DTap);
+                hTapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.HTap);
+                lTapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.LTap);
+                TraceButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Trace);
+                dTraceButton.Checked = noteView.NewNoteType.HasFlag(NoteType.DTrace);
+                hTraceButton.Checked = noteView.NewNoteType.HasFlag(NoteType.HTrace);
+                lTraceButton.Checked = noteView.NewNoteType.HasFlag(NoteType.LTrace);
                 holdButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Hold);
                 dHoldButton.Checked = noteView.NewNoteType.HasFlag(NoteType.DHold);
+                hHoldButton.Checked = noteView.NewNoteType.HasFlag(NoteType.HHold);
+                lHoldButton.Checked = noteView.NewNoteType.HasFlag(NoteType.LHold);
             };
 
             return new ToolStrip(new ToolStripItem[]
             {
-                tapButton, dTapButton, holdButton, dHoldButton,
+                tapButton,holdButton,TraceButton, dTapButton, dHoldButton,dTraceButton,hTapButton,hHoldButton,hTraceButton,lTapButton,lHoldButton,lTraceButton,
                 quantizeComboBox
             });
         }

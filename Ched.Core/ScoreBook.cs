@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Ched.Core
+namespace HexaBeatChartEditer.Core
 {
     /// <summary>
     /// 譜面ファイルを表すクラスです。
@@ -136,7 +136,19 @@ namespace Ched.Core
             {
                 res.Score.Events.TimeSignatureChangeEvents.Add(new Events.TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2 });
             }
+
             res.score.Notes.Taps = res.score.Notes.Taps.Distinct().ToList();
+            res.score.Notes.DTaps = res.score.Notes.DTaps.Distinct().ToList();
+            res.score.Notes.HTaps = res.score.Notes.HTaps.Distinct().ToList();
+            res.score.Notes.LTaps = res.score.Notes.LTaps.Distinct().ToList();
+            res.score.Notes.Traces = res.score.Notes.Traces.Distinct().ToList();
+            res.score.Notes.DTraces = res.score.Notes.DTraces.Distinct().ToList();
+            res.score.Notes.HTraces = res.score.Notes.HTraces.Distinct().ToList();
+            res.score.Notes.LTraces = res.score.Notes.LTraces.Distinct().ToList();
+            res.score.Notes.Holds = res.score.Notes.Holds.Distinct().ToList();
+            res.score.Notes.DHolds = res.score.Notes.DHolds.Distinct().ToList();
+            res.score.Notes.HHolds = res.score.Notes.HHolds.Distinct().ToList();
+            res.score.Notes.LHolds = res.score.Notes.LHolds.Distinct().ToList();
 
             res.Path = path;
             return res;

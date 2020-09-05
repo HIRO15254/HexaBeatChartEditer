@@ -2,10 +2,10 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Ched.Core")]
-[assembly: AssemblyDescription("Ched Core Library")]
+[assembly: AssemblyTitle("HexaBeatChartEditer.Core")]
+[assembly: AssemblyDescription("HexaBeatChartEditer Core Library")]
 [assembly: AssemblyCompany("paltee.net")]
-[assembly: AssemblyProduct("Ched.Core")]
+[assembly: AssemblyProduct("HexaBeatChartEditer.Core")]
 [assembly: AssemblyCopyright("Copyright (C) 2018 Paralleltree")]
 
 [assembly: ComVisible(false)]

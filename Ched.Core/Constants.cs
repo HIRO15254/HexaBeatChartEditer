@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Core
+namespace HexaBeatChartEditer.Core
 {
     public static class Constants
     {

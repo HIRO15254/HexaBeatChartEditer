@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Core.Notes
+namespace HexaBeatChartEditer.Core.Notes
 {
-    public class DHold : Hold
+    public class LHold : Hold
     {
     }
 }

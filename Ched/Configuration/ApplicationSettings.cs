@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
 
-namespace Ched.Configuration
+namespace HexaBeatChartEditer.Configuration
 {
     internal sealed class ApplicationSettings : SettingsBase
     {

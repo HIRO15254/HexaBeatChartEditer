@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Un4seen.Bass;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     public class SoundManager : IDisposable
     {

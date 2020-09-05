@@ -6,9 +6,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using Ched.Configuration;
+using HexaBeatChartEditer.Configuration;
 
-namespace Ched
+namespace HexaBeatChartEditer
 {
     static class Program
     {

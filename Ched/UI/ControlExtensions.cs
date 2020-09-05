@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Reactive.Linq;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     internal static class ControlExtensions
     {

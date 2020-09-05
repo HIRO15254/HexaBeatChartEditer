@@ -2,10 +2,10 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Ched.Plugins")]
-[assembly: AssemblyDescription("Ched Plugin Support Library")]
+[assembly: AssemblyTitle("HexaBeatChartEditer.Plugins")]
+[assembly: AssemblyDescription("HexaBeatChartEditer Plugin Support Library")]
 [assembly: AssemblyCompany("paltee.net")]
-[assembly: AssemblyProduct("Ched.Plugins")]
+[assembly: AssemblyProduct("HexaBeatChartEditer.Plugins")]
 [assembly: AssemblyCopyright("Copyright (C) 2018 Paralleltree")]
 
 [assembly: ComVisible(false)]

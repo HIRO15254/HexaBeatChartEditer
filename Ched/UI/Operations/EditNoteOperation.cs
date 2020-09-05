@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Ched.Core.Notes;
-using Ched.UI;
+using HexaBeatChartEditer.Core.Notes;
+using HexaBeatChartEditer.UI;
 
-namespace Ched.UI.Operations
+namespace HexaBeatChartEditer.UI.Operations
 {
     public abstract class EditShortNoteOperation : IOperation
     {
@@ -82,7 +82,7 @@ namespace Ched.UI.Operations
             }
         }
     }
-
+    /*
     public class ChangeShortNoteWidthOperation : EditShortNoteOperation
     {
         public override string Description { get { return "ノート幅の変更"; } }
@@ -140,7 +140,7 @@ namespace Ched.UI.Operations
             }
         }
     }
-
+    */
     public class ChangeLongNoteDurationOperation : IOperation
     {
         public string Description { get { return "HOLD長さの変更"; } }

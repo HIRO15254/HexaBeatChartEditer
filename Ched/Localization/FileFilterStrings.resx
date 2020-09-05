@@ -120,7 +120,7 @@
   <data name="AudioFilter" xml:space="preserve">
     <value>音声ファイル</value>
   </data>
-  <data name="ChedFilter" xml:space="preserve">
+  <data name="HexaBeatChartEditerFilter" xml:space="preserve">
     <value>HexabeatChartEditer専用形式</value>
   </data>
 </root>

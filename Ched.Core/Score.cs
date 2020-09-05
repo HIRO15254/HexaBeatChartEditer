@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Core
+namespace HexaBeatChartEditer.Core
 {
     /// <summary>
     /// 譜面データを表すクラスです。

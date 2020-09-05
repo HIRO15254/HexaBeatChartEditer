@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Ched.Core.Events;
+using HexaBeatChartEditer.Core.Events;
 
-namespace Ched.Core
+namespace HexaBeatChartEditer.Core
 {
     /// <summary>
     /// イベントを格納するコレクションを表すクラスです。

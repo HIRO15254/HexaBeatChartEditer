@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     public static class PlaneExtensions
     {

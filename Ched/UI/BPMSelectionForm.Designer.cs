@@ -1,4 +1,4 @@
-﻿namespace Ched.UI
+﻿namespace HexaBeatChartEditer.UI
 {
     partial class BPMSelectionForm
     {

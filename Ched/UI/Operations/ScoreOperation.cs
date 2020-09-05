@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Ched.Core;
+using HexaBeatChartEditer.Core;
 
-namespace Ched.UI.Operations
+namespace HexaBeatChartEditer.UI.Operations
 {
     public class UpdateScoreOperation : IOperation
     {

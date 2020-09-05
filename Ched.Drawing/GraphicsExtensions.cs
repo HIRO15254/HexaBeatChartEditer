@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Drawing
+namespace HexaBeatChartEditer.Drawing
 {
     public static class GraphicsExtensions
     {
@@ -24,6 +24,7 @@ namespace Ched.Drawing
             path.AddLine(rect.Left, rect.Bottom - radius, rect.Left + radius * 0.86f, rect.Bottom);
             path.AddLine(rect.Right - radius * 0.86f, rect.Bottom, rect.Right, rect.Bottom - radius);
             path.AddLine(rect.Right, rect.Top + radius, rect.Right - radius * 0.86f, rect.Top);
+
             return path;
         }
 

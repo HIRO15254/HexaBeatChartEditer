@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using Ched.Core.Events;
-using Ched.Core.Notes;
+using HexaBeatChartEditer.Core.Events;
+using HexaBeatChartEditer.Core.Notes;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     public class SoundPreviewManager : IDisposable
     {
@@ -61,11 +61,9 @@ namespace Ched.UI
 
             var tickSet = new HashSet<int>();
             var notes = NoteView.Notes;
-            var shortNotesTick = notes.Taps.Cast<TappableBase>().Concat(notes.DTaps).Concat(notes.Flicks).Concat(notes.Damages).Select(p => p.Tick);
-            var holdsTick = notes.Holds.SelectMany(p => new int[] { p.StartTick, p.StartTick + p.Duration });
-            var dholdsTick = notes.DHolds.SelectMany(p => new int[] { p.StartTick, p.StartTick + p.Duration });
+            var shortNotesTick = notes.Taps.Cast<TappableBase>().Concat(notes.DTaps).Concat(notes.HTaps).Concat(notes.LTaps).Concat(notes.Traces).Concat(notes.DTraces).Concat(notes.HTraces).Concat(notes.LTraces).Concat(notes.Flicks).Concat(notes.Damages).Select(p => p.Tick);
 
-            foreach (int tick in shortNotesTick.Concat(holdsTick).Concat(dholdsTick))
+            foreach (int tick in shortNotesTick)
             {
                 tickSet.Add(tick);
             }

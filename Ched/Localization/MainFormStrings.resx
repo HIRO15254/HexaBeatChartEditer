@@ -267,4 +267,7 @@
   <data name="WidenLaneWidth" xml:space="preserve">
     <value>レーン幅を広げる</value>
   </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>重複ノートの削除</value>
+  </data>
 </root>

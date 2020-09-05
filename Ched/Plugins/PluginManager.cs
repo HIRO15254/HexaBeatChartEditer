@@ -9,7 +9,7 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Registration;
 
-namespace Ched.Plugins
+namespace HexaBeatChartEditer.Plugins
 {
     public class PluginManager
     {

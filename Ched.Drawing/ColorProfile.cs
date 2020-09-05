@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Drawing
+namespace HexaBeatChartEditer.Drawing
 {
     public class GradientColor
     {
@@ -22,18 +22,9 @@ namespace Ched.Drawing
     public class ColorProfile
     {
         public GradientColor BorderColor { get; set; }
-        public GradientColor TapColor { get; set; }
-        public GradientColor DTapColor { get; set; }
-
-        /// <summary>
-        /// フリックを描画する際の<see cref="GradientColor"/>を指定します.
-        /// Item1には背景色, Item2には前景色を指定します.
-        /// </summary>
-        public Tuple<GradientColor, GradientColor> FlickColor { get; set; }
-        public GradientColor DamageColor { get; set; }
-        public GradientColor HoldBackgroundColor { get; set; }
-        public GradientColor HoldColor { get; set; }
-        public GradientColor DHoldBackgroundColor { get; set; }
-        public GradientColor DHoldColor { get; set; }
+        public GradientColor NColor { get; set; }
+        public GradientColor DColor { get; set; }
+        public GradientColor HColor { get; set; }
+        public GradientColor LColor { get; set; }
     }
 }

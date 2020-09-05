@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Core.Events
+namespace HexaBeatChartEditer.Core.Events
 {
     /// <summary>
     /// 拍子の変更を表します。

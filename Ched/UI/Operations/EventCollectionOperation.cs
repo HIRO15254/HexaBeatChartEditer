@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Ched.Core.Events;
+using HexaBeatChartEditer.Core.Events;
 
-namespace Ched.UI.Operations
+namespace HexaBeatChartEditer.UI.Operations
 {
     public abstract class EventCollectionOperation<T> : IOperation where T : EventBase
     {
@@ -23,7 +23,7 @@ namespace Ched.UI.Operations
         public abstract void Redo();
         public abstract void Undo();
     }
-
+    
     public class InsertEventOperation<T> : EventCollectionOperation<T> where T : EventBase
     {
         public override string Description { get { return "イベントの挿入"; } }

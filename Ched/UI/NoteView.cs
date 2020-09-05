@@ -13,12 +13,12 @@ using System.Reactive.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 
-using Ched.Core;
-using Ched.Core.Notes;
-using Ched.Drawing;
-using Ched.UI.Operations;
+using HexaBeatChartEditer.Core;
+using HexaBeatChartEditer.Core.Notes;
+using HexaBeatChartEditer.Drawing;
+using HexaBeatChartEditer.UI.Operations;
 
-namespace Ched.UI
+namespace HexaBeatChartEditer.UI
 {
     public partial class NoteView : Control
     {
@@ -100,7 +100,7 @@ namespace Ched.UI
         }
 
         /// <summary>
-        /// ノーツの描画に利用する<see cref="Ched.Drawing.ColorProfile"/>を取得します。
+        /// ノーツの描画に利用する<see cref="HexaBeatChartEditer.Drawing.ColorProfile"/>を取得します。
         /// </summary>
         public ColorProfile ColorProfile
         {
@@ -286,7 +286,6 @@ namespace Ched.UI
         /// <summary>
         /// ノート端の当たり判定幅の下限を取得します。
         /// </summary>
-        public float MinimumEdgeHitWidth => UnitLaneWidth * 0.4f;
 
         protected int LastWidth { get; set; } = 4;
 
@@ -319,14 +318,10 @@ namespace Ched.UI
             colorProfile = new ColorProfile()
             {
                 BorderColor = new GradientColor(Color.FromArgb(160, 160, 160), Color.FromArgb(208, 208, 208)),
-                TapColor = new GradientColor(Color.FromArgb(103, 125, 218), Color.FromArgb(103, 125, 218)),
-                DTapColor = new GradientColor(Color.FromArgb(89, 236, 63), Color.FromArgb(89, 236, 63)),
-                FlickColor = Tuple.Create(new GradientColor(Color.FromArgb(68, 68, 68), Color.FromArgb(186, 186, 186)), new GradientColor(Color.FromArgb(0, 96, 138), Color.FromArgb(122, 216, 252))),
-                DamageColor = new GradientColor(Color.FromArgb(8, 8, 116), Color.FromArgb(22, 40, 180)),
-                HoldColor = new GradientColor(Color.FromArgb(218,102,102), Color.FromArgb(218, 102, 102)),
-                HoldBackgroundColor = new GradientColor(Color.FromArgb(140, 255, 0, 0), Color.FromArgb(140,255, 255, 255)),
-                DHoldColor = new GradientColor(Color.FromArgb(201, 103, 218), Color.FromArgb(201, 103, 218)),
-                DHoldBackgroundColor = new GradientColor(Color.FromArgb(140, 222, 25, 255), Color.FromArgb(140, 255, 255, 255)),
+                NColor = new GradientColor(Color.FromArgb(200, 58, 255, 25), Color.FromArgb(200, 255 ,255,255)),
+                DColor = new GradientColor(Color.FromArgb(200, 206, 25, 255),Color.FromArgb(200, 255, 255, 255)),
+                HColor = new GradientColor(Color.FromArgb(200, 255, 25, 25), Color.FromArgb(200, 255, 255, 255)),
+                LColor = new GradientColor(Color.FromArgb(200, 41, 25, 255), Color.FromArgb(200, 255, 255, 255))
             };
 
             var mouseDown = this.MouseDownAsObservable();
@@ -343,27 +338,33 @@ namespace Ched.UI
                     Func<int, bool> visibleTick = t => t >= HeadTick && t <= tailTick;
 
                     var shortNotes = Enumerable.Empty<TappableBase>()
-                        .Concat(Notes.Damages.Reverse())
-                        .Concat(Notes.DTaps.Reverse())
                         .Concat(Notes.Taps.Reverse())
+                        .Concat(Notes.DTaps.Reverse())
+                        .Concat(Notes.HTaps.Reverse())
+                        .Concat(Notes.LTaps.Reverse())
+                        .Concat(Notes.Traces.Reverse())
+                        .Concat(Notes.DTraces.Reverse())
+                        .Concat(Notes.HTraces.Reverse())
+                        .Concat(Notes.LTraces.Reverse())
+                        .Concat(Notes.Damages.Reverse())
                         .Concat(Notes.Flicks.Reverse())
                         .Where(q => visibleTick(q.Tick))
                         .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
 
+                    foreach (RectangleF rect in shortNotes)
+                    {
+                        if (!rect.Contains(pos)) continue;
+                        Cursor = Cursors.SizeAll;
+                        return;
+                    }
+                    foreach (RectangleF rect in shortNotes)
+                    {
+                        if (!rect.Contains(pos)) continue;
+                        Cursor = Cursors.SizeAll;
+                        return;
+                    }
 
-                    foreach (RectangleF rect in shortNotes)
-                    {
-                        if (!rect.Contains(pos)) continue;
-                        Cursor = Cursors.SizeAll;
-                        return;
-                    }
-                    foreach (RectangleF rect in shortNotes)
-                    {
-                        if (!rect.Contains(pos)) continue;
-                        Cursor = Cursors.SizeAll;
-                        return;
-                    }
-                    foreach (var hold in Notes.Holds.Reverse())
+                    foreach (var hold in Notes.Holds.Concat(Notes.DHolds).Concat(Notes.HHolds).Concat(Notes.LHolds).Reverse())
                     {
                         if (GetClickableRectFromNotePosition(hold.EndNote.Tick, hold.LaneIndex, hold.Width).Contains(pos))
                         {
@@ -432,49 +433,6 @@ namespace Ched.UI
                             .Finally(() => Cursor.Current = Cursors.Default);
                     };
 
-                    Func<TappableBase, IObservable<MouseEventArgs>> tappableNoteLeftThumbHandler = note =>
-                    {
-                        var beforePos = new ChangeShortNoteWidthOperation.NotePosition(note.LaneIndex, note.Width);
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                xdiff = Math.Min(beforePos.Width - 1, Math.Max(-beforePos.LaneIndex, xdiff));
-                                int width = beforePos.Width - xdiff;
-                                int laneIndex = beforePos.LaneIndex + xdiff;
-                                width = Math.Min(Constants.LanesCount - laneIndex, Math.Max(1, width));
-                                laneIndex = Math.Min(Constants.LanesCount - width, Math.Max(0, laneIndex));
-                                note.SetPosition(laneIndex, width);
-                                Cursor.Current = Cursors.SizeWE;
-                            })
-                            .Finally(() =>
-                            {
-                                Cursor.Current = Cursors.Default;
-                                LastWidth = note.Width;
-                            });
-                    };
-
-                    Func<TappableBase, IObservable<MouseEventArgs>> tappableNoteRightThumbHandler = note =>
-                    {
-                        int beforeWidth = note.Width;
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                int xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                int width = beforeWidth + xdiff;
-                                note.Width = Math.Min(Constants.LanesCount - note.LaneIndex, Math.Max(1, width));
-                                Cursor.Current = Cursors.SizeWE;
-                            })
-                            .Finally(() =>
-                            {
-                                Cursor.Current = Cursors.Default;
-                                LastWidth = note.Width;
-                            });
-                    };
 
 
                     Func<TappableBase, IObservable<MouseEventArgs>> shortNoteHandler = note =>
@@ -556,25 +514,43 @@ namespace Ched.UI
 
                     Func<IObservable<MouseEventArgs>> surfaceNotesHandler = () =>
                     {
-                        foreach (var note in Notes.Damages.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
-                        {
-                            var subscription = shortNoteHandler(note);
-                            if (subscription != null) return subscription;
-                        }
-
-                        foreach (var note in Notes.DTaps.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
-                        {
-                            var subscription = shortNoteHandler(note);
-                            if (subscription != null) return subscription;
-                        }
-
                         foreach (var note in Notes.Taps.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
                         {
                             var subscription = shortNoteHandler(note);
                             if (subscription != null) return subscription;
                         }
+                        foreach (var note in Notes.DTaps.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = shortNoteHandler(note);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var note in Notes.HTaps.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = shortNoteHandler(note);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var note in Notes.LTaps.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = shortNoteHandler(note);
+                            if (subscription != null) return subscription;
+                        }
 
-                        foreach (var note in Notes.Flicks.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        foreach (var note in Notes.Traces.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = shortNoteHandler(note);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var note in Notes.DTraces.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = shortNoteHandler(note);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var note in Notes.HTraces.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = shortNoteHandler(note);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var note in Notes.LTraces.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
                         {
                             var subscription = shortNoteHandler(note);
                             if (subscription != null) return subscription;
@@ -585,8 +561,17 @@ namespace Ched.UI
                             var subscription = holdHandler(note);
                             if (subscription != null) return subscription;
                         }
-
                         foreach (var note in Notes.DHolds.Reverse().Where(q => q.StartTick <= tailTick && q.StartTick + q.GetDuration() >= HeadTick))
+                        {
+                            var subscription = holdHandler(note);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var note in Notes.HHolds.Reverse().Where(q => q.StartTick <= tailTick && q.StartTick + q.GetDuration() >= HeadTick))
+                        {
+                            var subscription = holdHandler(note);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var note in Notes.LHolds.Reverse().Where(q => q.StartTick <= tailTick && q.StartTick + q.GetDuration() >= HeadTick))
                         {
                             var subscription = holdHandler(note);
                             if (subscription != null) return subscription;
@@ -599,7 +584,7 @@ namespace Ched.UI
                     if (subscription2 != null) return subscription2;
 
                     // なんもねえなら追加だァ！
-                    if ((NoteType.Tap | NoteType.DTap | NoteType.Flick | NoteType.Damage).HasFlag(NewNoteType))
+                    if ((NoteType.Tap | NoteType.DTap | NoteType.HTap | NoteType.LTap | NoteType.Trace | NoteType.DTrace | NoteType.HTrace | NoteType.LTrace).HasFlag(NewNoteType))
                     {
                         TappableBase newNote = null;
                         IOperation op = null;
@@ -619,20 +604,49 @@ namespace Ched.UI
                                 op = new InsertDTapOperation(Notes, dtap);
                                 break;
 
-                            case NoteType.Flick:
-                                var flick = new Flick();
-                                Notes.Add(flick);
-                                newNote = flick;
-                                op = new InsertFlickOperation(Notes, flick);
+                            case NoteType.HTap:
+                                var htap = new HTap();
+                                Notes.Add(htap);
+                                newNote = htap;
+                                op = new InsertHTapOperation(Notes, htap);
                                 break;
 
-                            case NoteType.Damage:
-                                var damage = new Damage();
-                                Notes.Add(damage);
-                                newNote = damage;
-                                op = new InsertDamageOperation(Notes, damage);
+                            case NoteType.LTap:
+                                var ltap = new LTap();
+                                Notes.Add(ltap);
+                                newNote = ltap;
+                                op = new InsertLTapOperation(Notes, ltap);
+                                break;
+
+                            case NoteType.Trace:
+                                var trace = new Trace();
+                                Notes.Add(trace);
+                                newNote = trace;
+                                op = new InsertTraceOperation(Notes, trace);
+                                break;
+
+                            case NoteType.DTrace:
+                                var dtrace = new DTrace();
+                                Notes.Add(dtrace);
+                                newNote = dtrace;
+                                op = new InsertDTraceOperation(Notes, dtrace);
+                                break;
+
+                            case NoteType.HTrace:
+                                var htrace = new HTrace();
+                                Notes.Add(htrace);
+                                newNote = htrace;
+                                op = new InsertHTraceOperation(Notes, htrace);
+                                break;
+
+                            case NoteType.LTrace:
+                                var ltrace = new LTrace();
+                                Notes.Add(ltrace);
+                                newNote = ltrace;
+                                op = new InsertLTraceOperation(Notes, ltrace);
                                 break;
                         }
+
                         newNote.Width = 1;
                         newNote.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), 0);
                         int newNoteLaneIndex = (int)(scorePos.X / (UnitLaneWidth + BorderThickness)) - newNote.Width / 2;
@@ -675,6 +689,34 @@ namespace Ched.UI
                                 Invalidate();
                                 return holdDurationHandler(dhold)
                                     .Finally(() => OperationManager.Push(new InsertDHoldOperation(Notes, dhold)));
+
+                            case NoteType.HHold:
+                                var hhold = new HHold
+                                {
+                                    StartTick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), 0),
+                                    Width = 1,
+                                    Duration = (int)QuantizeTick
+                                };
+                                newNoteLaneIndex = (int)(scorePos.X / (UnitLaneWidth + BorderThickness)) - hhold.Width / 2;
+                                hhold.LaneIndex = Math.Min(Constants.LanesCount - hhold.Width, Math.Max(0, newNoteLaneIndex));
+                                Notes.Add(hhold);
+                                Invalidate();
+                                return holdDurationHandler(hhold)
+                                    .Finally(() => OperationManager.Push(new InsertHHoldOperation(Notes, hhold)));
+
+                            case NoteType.LHold:
+                                var lhold = new LHold
+                                {
+                                    StartTick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), 0),
+                                    Width = 1,
+                                    Duration = (int)QuantizeTick
+                                };
+                                newNoteLaneIndex = (int)(scorePos.X / (UnitLaneWidth + BorderThickness)) - lhold.Width / 2;
+                                lhold.LaneIndex = Math.Min(Constants.LanesCount - lhold.Width, Math.Max(0, newNoteLaneIndex));
+                                Notes.Add(lhold);
+                                Invalidate();
+                                return holdDurationHandler(lhold)
+                                    .Finally(() => OperationManager.Push(new InsertLHoldOperation(Notes, lhold)));
                         }
                     }
                     return Observable.Empty<MouseEventArgs>();
@@ -736,12 +778,12 @@ namespace Ched.UI
                     matrix.Invert();
                     PointF scorePos = matrix.TransformPoint(p.Pos);
 
-                    foreach (var note in Notes.Damages.Reverse())
+                    foreach (var note in Notes.Taps.Reverse())
                     {
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var op = new RemoveDamageOperation(Notes, note);
+                            var op = new RemoveTapOperation(Notes, note);
                             Notes.Remove(note);
                             OperationManager.Push(op);
                             return;
@@ -760,24 +802,72 @@ namespace Ched.UI
                         }
                     }
 
-                    foreach (var note in Notes.Taps.Reverse())
+                    foreach (var note in Notes.HTaps.Reverse())
                     {
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var op = new RemoveTapOperation(Notes, note);
+                            var op = new RemoveHTapOperation(Notes, note);
                             Notes.Remove(note);
                             OperationManager.Push(op);
                             return;
                         }
                     }
 
-                    foreach (var note in Notes.Flicks.Reverse())
+                    foreach (var note in Notes.LTaps.Reverse())
                     {
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var op = new RemoveFlickOperation(Notes, note);
+                            var op = new RemoveLTapOperation(Notes, note);
+                            Notes.Remove(note);
+                            OperationManager.Push(op);
+                            return;
+                        }
+                    }
+
+                    foreach (var note in Notes.Traces.Reverse())
+                    {
+                        RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
+                        if (rect.Contains(scorePos))
+                        {
+                            var op = new RemoveTraceOperation(Notes, note);
+                            Notes.Remove(note);
+                            OperationManager.Push(op);
+                            return;
+                        }
+                    }
+
+                    foreach (var note in Notes.DTraces.Reverse())
+                    {
+                        RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
+                        if (rect.Contains(scorePos))
+                        {
+                            var op = new RemoveDTraceOperation(Notes, note);
+                            Notes.Remove(note);
+                            OperationManager.Push(op);
+                            return;
+                        }
+                    }
+
+                    foreach (var note in Notes.HTraces.Reverse())
+                    {
+                        RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
+                        if (rect.Contains(scorePos))
+                        {
+                            var op = new RemoveHTraceOperation(Notes, note);
+                            Notes.Remove(note);
+                            OperationManager.Push(op);
+                            return;
+                        }
+                    }
+
+                    foreach (var note in Notes.LTraces.Reverse())
+                    {
+                        RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
+                        if (rect.Contains(scorePos))
+                        {
+                            var op = new RemoveLTraceOperation(Notes, note);
                             Notes.Remove(note);
                             OperationManager.Push(op);
                             return;
@@ -807,6 +897,31 @@ namespace Ched.UI
                             return;
                         }
                     }
+
+                    foreach (var hold in Notes.HHolds.Reverse())
+                    {
+                        RectangleF rect = GetClickableRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
+                        if (rect.Contains(scorePos))
+                        {
+                            var op = new RemoveHHoldOperation(Notes, hold);
+                            Notes.Remove(hold);
+                            OperationManager.Push(op);
+                            return;
+                        }
+                    }
+
+                    foreach (var hold in Notes.LHolds.Reverse())
+                    {
+                        RectangleF rect = GetClickableRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
+                        if (rect.Contains(scorePos))
+                        {
+                            var op = new RemoveLHoldOperation(Notes, hold);
+                            Notes.Remove(hold);
+                            OperationManager.Push(op);
+                            return;
+                        }
+                    }
+
                 })
                 .Subscribe(p => Invalidate());
 
@@ -994,6 +1109,9 @@ namespace Ched.UI
 
             // ノート描画
             var holds = Notes.Holds.Where(p => p.StartTick <= tailTick && p.StartTick + p.GetDuration() >= HeadTick).ToList();
+            var dholds = Notes.DHolds.Where(p => p.StartTick <= tailTick && p.StartTick + p.GetDuration() >= HeadTick).ToList();
+            var hholds = Notes.HHolds.Where(p => p.StartTick <= tailTick && p.StartTick + p.GetDuration() >= HeadTick).ToList();
+            var lholds = Notes.LHolds.Where(p => p.StartTick <= tailTick && p.StartTick + p.GetDuration() >= HeadTick).ToList();
             // ロングノーツ背景
             // HOLD
             foreach (var hold in holds)
@@ -1005,20 +1123,6 @@ namespace Ched.UI
                     GetYPositionFromTick(hold.Duration)
                     ));
             }
-
-            // 中継点
-            foreach (var hold in holds)
-            {
-                dc.DrawHoldEnd(GetRectFromNotePosition(hold.StartTick + hold.Duration, hold.LaneIndex, hold.Width));
-            }
-
-            // 始点
-            foreach (var hold in holds)
-            {
-                dc.DrawHoldBegin(GetRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width));
-            }
-
-            var dholds = Notes.DHolds.Where(p => p.StartTick <= tailTick && p.StartTick + p.GetDuration() >= HeadTick).ToList();
             // DHOLD
             foreach (var hold in dholds)
             {
@@ -1029,39 +1133,36 @@ namespace Ched.UI
                     GetYPositionFromTick(hold.Duration)
                     ));
             }
-
-            // 中継点
-            foreach (var hold in dholds)
+            // HHOLD
+            foreach (var hold in hholds)
             {
-                dc.DrawDHoldEnd(GetRectFromNotePosition(hold.StartTick + hold.Duration, hold.LaneIndex, hold.Width));
+                dc.DrawHHoldBackground(new RectangleF(
+                    (UnitLaneWidth + BorderThickness) * hold.LaneIndex + BorderThickness,
+                    GetYPositionFromTick(hold.StartTick),
+                    (UnitLaneWidth + BorderThickness) * hold.Width - BorderThickness,
+                    GetYPositionFromTick(hold.Duration)
+                    ));
             }
-
-            // 始点
-            foreach (var hold in dholds)
+            // LHOLD
+            foreach (var hold in lholds)
             {
-                dc.DrawDHoldBegin(GetRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width));
+                dc.DrawLHoldBackground(new RectangleF(
+                    (UnitLaneWidth + BorderThickness) * hold.LaneIndex + BorderThickness,
+                    GetYPositionFromTick(hold.StartTick),
+                    (UnitLaneWidth + BorderThickness) * hold.Width - BorderThickness,
+                    GetYPositionFromTick(hold.Duration)
+                    ));
             }
 
             // TAP, DTAP, FLICK, DAMAGE
-            foreach (var note in Notes.Flicks.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
-            {
-                dc.DrawFlick(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));
-            }
-
-            foreach (var note in Notes.Taps.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
-            {
-                dc.DrawTap(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));
-            }
-
-            foreach (var note in Notes.DTaps.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
-            {
-                dc.DrawDTap(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));
-            }
-
-            foreach (var note in Notes.Damages.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
-            {
-                dc.DrawDamage(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));
-            }
+            foreach (var note in Notes.Taps.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick)){dc.DrawTap(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));}
+            foreach (var note in Notes.DTaps.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick)){dc.DrawDTap(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width));}
+            foreach (var note in Notes.HTaps.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick)) { dc.DrawHTap(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width)); }
+            foreach (var note in Notes.LTaps.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick)) { dc.DrawLTap(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width)); }
+            foreach (var note in Notes.Traces.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick)) { dc.DrawTrace(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width)); }
+            foreach (var note in Notes.DTraces.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick)) { dc.DrawDTrace(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width)); }
+            foreach (var note in Notes.HTraces.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick)) { dc.DrawHTrace(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width)); }
+            foreach (var note in Notes.LTraces.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick)) { dc.DrawLTrace(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width)); }
 
             // 選択範囲描画
             if (Editable) DrawSelectionRange(pe.Graphics);
@@ -1237,11 +1338,16 @@ namespace Ched.UI
             Func<IAirable, bool> contained = p => p.Tick >= minTick && p.Tick <= maxTick & p.LaneIndex >= startLaneIndex && p.LaneIndex + p.Width <= endLaneIndex;
             c.Taps.AddRange(Notes.Taps.Where(p => contained(p)));
             c.DTaps.AddRange(Notes.DTaps.Where(p => contained(p)));
-            c.Flicks.AddRange(Notes.Flicks.Where(p => contained(p)));
-            c.Damages.AddRange(Notes.Damages.Where(p => contained(p)));
+            c.HTaps.AddRange(Notes.HTaps.Where(p => contained(p)));
+            c.LTaps.AddRange(Notes.LTaps.Where(p => contained(p)));
+            c.Traces.AddRange(Notes.Traces.Where(p => contained(p)));
+            c.DTraces.AddRange(Notes.DTraces.Where(p => contained(p)));
+            c.HTraces.AddRange(Notes.HTraces.Where(p => contained(p)));
+            c.LTraces.AddRange(Notes.LTraces.Where(p => contained(p)));
             c.Holds.AddRange(Notes.Holds.Where(p => p.StartTick >= minTick && p.StartTick + p.Duration <= maxTick && p.LaneIndex >= startLaneIndex && p.LaneIndex + p.Width <= endLaneIndex));
             c.DHolds.AddRange(Notes.DHolds.Where(p => p.StartTick >= minTick && p.StartTick + p.Duration <= maxTick && p.LaneIndex >= startLaneIndex && p.LaneIndex + p.Width <= endLaneIndex));
-
+            c.HHolds.AddRange(Notes.HHolds.Where(p => p.StartTick >= minTick && p.StartTick + p.Duration <= maxTick && p.LaneIndex >= startLaneIndex && p.LaneIndex + p.Width <= endLaneIndex));
+            c.LHolds.AddRange(Notes.LHolds.Where(p => p.StartTick >= minTick && p.StartTick + p.Duration <= maxTick && p.LaneIndex >= startLaneIndex && p.LaneIndex + p.Width <= endLaneIndex));
             return c;
         }
 
@@ -1309,10 +1415,18 @@ namespace Ched.UI
 
             var op = data.SelectedNotes.Taps.Select(p => new InsertTapOperation(Notes, p)).Cast<IOperation>()
                 .Concat(data.SelectedNotes.DTaps.Select(p => new InsertDTapOperation(Notes, p)))
-                .Concat(data.SelectedNotes.Flicks.Select(p => new InsertFlickOperation(Notes, p)))
-                .Concat(data.SelectedNotes.Damages.Select(p => new InsertDamageOperation(Notes, p)))
+                .Concat(data.SelectedNotes.HTaps.Select(p => new InsertHTapOperation(Notes, p)))
+                .Concat(data.SelectedNotes.LTaps.Select(p => new InsertLTapOperation(Notes, p)))
+                .Concat(data.SelectedNotes.Traces.Select(p => new InsertTraceOperation(Notes, p)))
+                .Concat(data.SelectedNotes.DTraces.Select(p => new InsertDTraceOperation(Notes, p)))
+                .Concat(data.SelectedNotes.HTraces.Select(p => new InsertHTraceOperation(Notes, p)))
+                .Concat(data.SelectedNotes.LTraces.Select(p => new InsertLTraceOperation(Notes, p)))
                 .Concat(data.SelectedNotes.Holds.Select(p => new InsertHoldOperation(Notes, p)))
-                .Concat(data.SelectedNotes.DHolds.Select(p => new InsertDHoldOperation(Notes, p)));
+                .Concat(data.SelectedNotes.DHolds.Select(p => new InsertDHoldOperation(Notes, p)))
+                .Concat(data.SelectedNotes.HHolds.Select(p => new InsertHHoldOperation(Notes, p)))
+                .Concat(data.SelectedNotes.LHolds.Select(p => new InsertLHoldOperation(Notes, p)))
+                .Concat(data.SelectedNotes.Flicks.Select(p => new InsertFlickOperation(Notes, p)))
+                .Concat(data.SelectedNotes.Damages.Select(p => new InsertDamageOperation(Notes, p)));
             var composite = new CompositeOperation("クリップボードからペースト", op.ToList());
             composite.Redo(); // 追加書くの面倒になったので許せ
 
@@ -1333,16 +1447,38 @@ namespace Ched.UI
                 Notes.Remove(p);
                 return new RemoveDTapOperation(Notes, p);
             });
-            var flicks = selected.Flicks.Select(p =>
+            var htaps = selected.HTaps.Select(p =>
             {
                 Notes.Remove(p);
-                return new RemoveFlickOperation(Notes, p);
+                return new RemoveHTapOperation(Notes, p);
             });
-            var damages = selected.Damages.Select(p =>
+            var ltaps = selected.LTaps.Select(p =>
             {
                 Notes.Remove(p);
-                return new RemoveDamageOperation(Notes, p);
+                return new RemoveLTapOperation(Notes, p);
             });
+
+            var traces = selected.Traces.Select(p =>
+            {
+                Notes.Remove(p);
+                return new RemoveTraceOperation(Notes, p);
+            });
+            var dtraces = selected.DTraces.Select(p =>
+            {
+                Notes.Remove(p);
+                return new RemoveDTraceOperation(Notes, p);
+            });
+            var htraces = selected.HTraces.Select(p =>
+            {
+                Notes.Remove(p);
+                return new RemoveHTraceOperation(Notes, p);
+            });
+            var ltraces = selected.LTraces.Select(p =>
+            {
+                Notes.Remove(p);
+                return new RemoveLTraceOperation(Notes, p);
+            });
+
             var holds = selected.Holds.Select(p =>
             {
                 Notes.Remove(p);
@@ -1353,11 +1489,34 @@ namespace Ched.UI
                 Notes.Remove(p);
                 return new RemoveDHoldOperation(Notes, p);
             });
-            var opList = taps.Cast<IOperation>().Concat(dtaps).Concat(flicks).Concat(damages)
-                .Concat(holds).Concat(dholds)
+            var hholds = selected.HHolds.Select(p =>
+            {
+                Notes.Remove(p);
+                return new RemoveHHoldOperation(Notes, p);
+            });
+            var lholds = selected.LHolds.Select(p =>
+            {
+                Notes.Remove(p);
+                return new RemoveLHoldOperation(Notes, p);
+            });
+
+            var flicks = selected.Flicks.Select(p =>
+            {
+                Notes.Remove(p);
+                return new RemoveFlickOperation(Notes, p);
+            });
+            var damages = selected.Damages.Select(p =>
+            {
+                Notes.Remove(p);
+                return new RemoveDamageOperation(Notes, p);
+            });
+
+            var opList = taps.Cast<IOperation>().Concat(dtaps).Concat(htaps).Concat(ltaps).Concat(traces).Concat(dtraces).Concat(htraces).Concat(ltraces)
+                .Concat(holds).Concat(dholds).Concat(hholds).Concat(lholds)
+                .Concat(flicks).Concat(damages)
                 .ToList();
 
-            if (opList.Count == 0) return;
+            if (opList.Count() == 0) return;
             OperationManager.Push(new CompositeOperation("選択範囲内ノーツ削除", opList));
             Invalidate();
         }
@@ -1452,8 +1611,19 @@ namespace Ched.UI
 
             public IReadOnlyCollection<Tap> Taps { get { return source.Taps; } }
             public IReadOnlyCollection<DTap> DTaps { get { return source.DTaps; } }
+            public IReadOnlyCollection<HTap> HTaps { get { return source.HTaps; } }
+            public IReadOnlyCollection<LTap> LTaps { get { return source.LTaps; } }
+
+            public IReadOnlyCollection<Trace> Traces { get { return source.Traces; } }
+            public IReadOnlyCollection<DTrace> DTraces { get { return source.DTraces; } }
+            public IReadOnlyCollection<HTrace> HTraces { get { return source.HTraces; } }
+            public IReadOnlyCollection<LTrace> LTraces { get { return source.LTraces; } }
+
             public IReadOnlyCollection<Hold> Holds { get { return source.Holds; } }
             public IReadOnlyCollection<DHold> DHolds { get { return source.DHolds; } }
+            public IReadOnlyCollection<HHold> HHolds { get { return source.HHolds; } }
+            public IReadOnlyCollection<LHold> LHolds { get { return source.LHolds; } }
+
             public IReadOnlyCollection<Flick> Flicks { get { return source.Flicks; } }
             public IReadOnlyCollection<Damage> Damages { get { return source.Damages; } }
 
@@ -1467,10 +1637,40 @@ namespace Ched.UI
                 source.Taps.Add(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
-
             public void Add(DTap note)
             {
                 source.DTaps.Add(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Add(HTap note)
+            {
+                source.HTaps.Add(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Add(LTap note)
+            {
+                source.LTaps.Add(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+
+            public void Add(Trace note)
+            {
+                source.Traces.Add(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Add(DTrace note)
+            {
+                source.DTraces.Add(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Add(HTrace note)
+            {
+                source.HTraces.Add(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Add(LTrace note)
+            {
+                source.LTraces.Add(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
 
@@ -1484,13 +1684,22 @@ namespace Ched.UI
                 source.DHolds.Add(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
+            public void Add(HHold note)
+            {
+                source.HHolds.Add(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Add(LHold note)
+            {
+                source.LHolds.Add(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
 
             public void Add(Flick note)
             {
                 source.Flicks.Add(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
-
             public void Add(Damage note)
             {
                 source.Damages.Add(note);
@@ -1503,10 +1712,40 @@ namespace Ched.UI
                 source.Taps.Remove(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
-
             public void Remove(DTap note)
             {
                 source.DTaps.Remove(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Remove(HTap note)
+            {
+                source.HTaps.Remove(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Remove(LTap note)
+            {
+                source.LTaps.Remove(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+
+            public void Remove(Trace note)
+            {
+                source.Traces.Remove(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Remove(DTrace note)
+            {
+                source.DTraces.Remove(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Remove(HTrace note)
+            {
+                source.HTraces.Remove(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Remove(LTrace note)
+            {
+                source.LTraces.Remove(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
 
@@ -1518,6 +1757,16 @@ namespace Ched.UI
             public void Remove(DHold note)
             {
                 source.DHolds.Remove(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Remove(HHold note)
+            {
+                source.HHolds.Remove(note);
+                NoteChanged?.Invoke(this, EventArgs.Empty);
+            }
+            public void Remove(LHold note)
+            {
+                source.LHolds.Remove(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
 
@@ -1535,8 +1784,8 @@ namespace Ched.UI
 
             public int GetLastTick()
             {
-                var shortNotes = Taps.Cast<TappableBase>().Concat(DTaps).Concat(Flicks).Concat(Damages).ToList();
-                var longNotes = Holds.Cast<ILongNote>().Concat(DHolds).ToList();
+                var shortNotes = Taps.Cast<TappableBase>().Concat(DTaps).Concat(HTaps).Concat(LTaps).Concat(Traces).Concat(DTraces).Concat(HTraces).Concat(LTraces).ToList();
+                var longNotes = Holds.Cast<ILongNote>().Concat(DHolds).Concat(HHolds).Concat(LHolds).ToList();
                 int lastShortNoteTick = shortNotes.Count == 0 ? 0 : shortNotes.Max(p => p.Tick);
                 int lastLongNoteTick = longNotes.Count == 0 ? 0 : longNotes.Max(p => p.StartTick + p.GetDuration());
                 return Math.Max(lastShortNoteTick, lastLongNoteTick);
@@ -1549,8 +1798,16 @@ namespace Ched.UI
 
                 foreach (var note in collection.Taps) Add(note);
                 foreach (var note in collection.DTaps) Add(note);
+                foreach (var note in collection.HTaps) Add(note);
+                foreach (var note in collection.LTaps) Add(note);
+                foreach (var note in collection.Traces) Add(note);
+                foreach (var note in collection.DTraces) Add(note);
+                foreach (var note in collection.HTraces) Add(note);
+                foreach (var note in collection.LTraces) Add(note);
                 foreach (var note in collection.Holds) Add(note);
                 foreach (var note in collection.DHolds) Add(note);
+                foreach (var note in collection.HHolds) Add(note);
+                foreach (var note in collection.LHolds) Add(note);
                 foreach (var note in collection.Flicks) Add(note);
                 foreach (var note in collection.Damages) Add(note);
             }
@@ -1580,10 +1837,18 @@ namespace Ched.UI
     {
         Tap = 1,
         DTap = 1 << 1,
-        Hold = 1 << 2,
-        DHold = 1 << 3,
-        Flick = 1 << 4,
-        Damage = 1 << 5
+        HTap = 1 << 2,
+        LTap = 1 << 3,
+        Trace = 1 << 4,
+        DTrace = 1 << 5,
+        HTrace = 1 << 6,
+        LTrace = 1 << 7,
+        Hold = 1 << 8,
+        DHold = 1 << 9,
+        HHold = 1 << 10,
+        LHold = 1 << 11,
+        Flick = 1 << 12,
+        Damage = 1 << 13
     }
 
     [Serializable]
@@ -1690,8 +1955,16 @@ namespace Ched.UI
             var res = new NoteCollection();
             res.Taps = collection.Taps.ToList();
             res.DTaps = collection.DTaps.ToList();
+            res.HTaps = collection.HTaps.ToList();
+            res.LTaps = collection.LTaps.ToList();
+            res.Traces = collection.Traces.ToList();
+            res.DTraces = collection.DTraces.ToList();
+            res.HTraces = collection.HTraces.ToList();
+            res.LTraces = collection.LTraces.ToList();
             res.Holds = collection.Holds.ToList();
             res.DHolds = collection.DHolds.ToList();
+            res.HHolds = collection.HHolds.ToList();
+            res.LHolds = collection.LHolds.ToList();
             res.Flicks = collection.Flicks.ToList();
             res.Damages = collection.Damages.ToList();
             return res;

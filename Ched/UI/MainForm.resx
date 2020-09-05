@@ -128,7 +128,7 @@
     <value>284, 261</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Ched</value>
+    <value>HexaBeatChartEditer</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>MainForm</value>

@@ -6,51 +6,60 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading.Tasks;
 
-using Ched.Core.Notes;
+using HexaBeatChartEditer.Core.Notes;
 
-namespace Ched.Drawing
+namespace HexaBeatChartEditer.Drawing
 {
     public static class NoteGraphics
     {
         public static void DrawTap(this DrawingContext dc, RectangleF rect)
         {
-            dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.TapColor, dc.ColorProfile.BorderColor);
+            dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.NColor, dc.ColorProfile.BorderColor);
         }
-
         public static void DrawDTap(this DrawingContext dc, RectangleF rect)
         {
-            dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.DTapColor, dc.ColorProfile.BorderColor);
+            dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.DColor, dc.ColorProfile.BorderColor);
+        }
+        public static void DrawHTap(this DrawingContext dc, RectangleF rect)
+        {
+            dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.HColor, dc.ColorProfile.BorderColor);
+        }
+        public static void DrawLTap(this DrawingContext dc, RectangleF rect)
+        {
+            dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.LColor, dc.ColorProfile.BorderColor);
         }
 
-        public static void DrawFlick(this DrawingContext dc, RectangleF rect)
+        public static void DrawTrace(this DrawingContext dc, RectangleF rect)
         {
-            var foregroundRect = new RectangleF(rect.Left + rect.Width / 4, rect.Top, rect.Width / 2, rect.Height);
-            dc.Graphics.DrawNoteBase(rect, dc.ColorProfile.FlickColor.Item1);
-            dc.Graphics.DrawNoteBase(foregroundRect, dc.ColorProfile.FlickColor.Item2);
-            dc.Graphics.DrawBorder(rect, dc.ColorProfile.BorderColor);
-            dc.Graphics.DrawTapSymbol(foregroundRect);
+            rect.Y += rect.Height * 0.2f;
+            rect.Height *= 0.6f;
+            dc.Graphics.DrawTraceNote(rect, dc.ColorProfile.NColor, dc.ColorProfile.BorderColor);
+        }
+        public static void DrawDTrace(this DrawingContext dc, RectangleF rect)
+        {
+            rect.Y += rect.Height * 0.2f;
+            rect.Height *= 0.6f;
+            dc.Graphics.DrawTraceNote(rect, dc.ColorProfile.DColor, dc.ColorProfile.BorderColor);
+        }
+        public static void DrawHTrace(this DrawingContext dc, RectangleF rect)
+        {
+            rect.Y += rect.Height * 0.2f;
+            rect.Height *= 0.6f;
+            dc.Graphics.DrawTraceNote(rect, dc.ColorProfile.HColor, dc.ColorProfile.BorderColor);
+        }
+        public static void DrawLTrace(this DrawingContext dc, RectangleF rect)
+        {
+            rect.Y += rect.Height * 0.2f;
+            rect.Height *= 0.6f;
+            dc.Graphics.DrawTraceNote(rect, dc.ColorProfile.LColor, dc.ColorProfile.BorderColor);
         }
 
-        public static void DrawDamage(this DrawingContext dc, RectangleF rect)
-        {
-            dc.Graphics.DrawSquarishNote(rect, dc.ColorProfile.DamageColor, dc.ColorProfile.BorderColor);
-        }
 
-        public static void DrawHoldBegin(this DrawingContext dc, RectangleF rect)
-        {
-            dc.DrawHoldEnd(rect);
-            dc.Graphics.DrawTapSymbol(rect);
-        }
-
-        public static void DrawHoldEnd(this DrawingContext dc, RectangleF rect)
-        {
-            dc.Graphics.DrawNote(rect, dc.ColorProfile.HoldColor, dc.ColorProfile.BorderColor);
-        }
 
         public static void DrawHoldBackground(this DrawingContext dc, RectangleF rect)
         {
-            Color BackgroundEdgeColor = dc.ColorProfile.HoldBackgroundColor.DarkColor;
-            Color BackgroundMiddleColor = dc.ColorProfile.HoldBackgroundColor.LightColor;
+            Color BackgroundEdgeColor = dc.ColorProfile.NColor.DarkColor;
+            Color BackgroundMiddleColor = dc.ColorProfile.NColor.LightColor;
             RectangleF rect2 = new RectangleF(rect.X + rect.Width * 0.1f, rect.Y, rect.Width * 0.8f, rect.Height);
 
             var prevMode = dc.Graphics.SmoothingMode;
@@ -67,40 +76,65 @@ namespace Ched.Drawing
             }
             dc.Graphics.SmoothingMode = prevMode;
         }
-        public static void DrawDHoldBegin(this DrawingContext dc, RectangleF rect)
-        {
-            dc.DrawDHoldEnd(rect);
-            dc.Graphics.DrawTapSymbol(rect);
-        }
-
-        public static void DrawDHoldEnd(this DrawingContext dc, RectangleF rect)
-        {
-            dc.Graphics.DrawNote(rect, dc.ColorProfile.DHoldColor, dc.ColorProfile.BorderColor);
-        }
 
         public static void DrawDHoldBackground(this DrawingContext dc, RectangleF rect)
         {
-            Color BackgroundEdgeColor = dc.ColorProfile.DHoldBackgroundColor.DarkColor;
-            Color BackgroundMiddleColor = dc.ColorProfile.DHoldBackgroundColor.LightColor;
+            Color BackgroundEdgeColor = dc.ColorProfile.DColor.DarkColor;
+            Color BackgroundMiddleColor = dc.ColorProfile.DColor.LightColor;
             RectangleF rect2 = new RectangleF(rect.X + rect.Width * 0.1f, rect.Y, rect.Width * 0.8f, rect.Height);
             var prevMode = dc.Graphics.SmoothingMode;
             dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             using (var brush = new LinearGradientBrush(rect2, BackgroundEdgeColor, BackgroundMiddleColor, LinearGradientMode.Horizontal))
             {
-                var blend = new ColorBlend(5)
+                var blend = new ColorBlend(3)
                 {
-                    Colors = new Color[] { BackgroundEdgeColor, BackgroundMiddleColor, BackgroundEdgeColor, BackgroundMiddleColor, BackgroundEdgeColor },
-                    Positions = new float[] { 0.0f ,0.3f, 0.5f,0.7f, 1.0f }
+                    Colors = new Color[] { BackgroundEdgeColor, BackgroundMiddleColor, BackgroundEdgeColor},
+                    Positions = new float[] { 0.0f , 0.5f, 1.0f }
                 };
                 brush.InterpolationColors = blend;
                 dc.Graphics.FillRectangle(brush, rect2);
             }
             dc.Graphics.SmoothingMode = prevMode;
         }
-    }
-    public class SlideStepElement
-    {
-        public PointF Point { get; set; }
-        public float Width { get; set; }
+
+        public static void DrawHHoldBackground(this DrawingContext dc, RectangleF rect)
+        {
+            Color BackgroundEdgeColor = dc.ColorProfile.HColor.DarkColor;
+            Color BackgroundMiddleColor = dc.ColorProfile.HColor.LightColor;
+            RectangleF rect2 = new RectangleF(rect.X + rect.Width * 0.1f, rect.Y, rect.Width * 0.8f, rect.Height);
+            var prevMode = dc.Graphics.SmoothingMode;
+            dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var brush = new LinearGradientBrush(rect2, BackgroundEdgeColor, BackgroundMiddleColor, LinearGradientMode.Horizontal))
+            {
+                var blend = new ColorBlend(3)
+                {
+                    Colors = new Color[] { BackgroundEdgeColor, BackgroundMiddleColor, BackgroundEdgeColor },
+                    Positions = new float[] { 0.0f, 0.5f, 1.0f }
+                };
+                brush.InterpolationColors = blend;
+                dc.Graphics.FillRectangle(brush, rect2);
+            }
+            dc.Graphics.SmoothingMode = prevMode;
+        }
+
+        public static void DrawLHoldBackground(this DrawingContext dc, RectangleF rect)
+        {
+            Color BackgroundEdgeColor = dc.ColorProfile.LColor.DarkColor;
+            Color BackgroundMiddleColor = dc.ColorProfile.LColor.LightColor;
+            RectangleF rect2 = new RectangleF(rect.X + rect.Width * 0.1f, rect.Y, rect.Width * 0.8f, rect.Height);
+            var prevMode = dc.Graphics.SmoothingMode;
+            dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var brush = new LinearGradientBrush(rect2, BackgroundEdgeColor, BackgroundMiddleColor, LinearGradientMode.Horizontal))
+            {
+                var blend = new ColorBlend(3)
+                {
+                    Colors = new Color[] { BackgroundEdgeColor, BackgroundMiddleColor, BackgroundEdgeColor },
+                    Positions = new float[] { 0.0f, 0.5f, 1.0f }
+                };
+                brush.InterpolationColors = blend;
+                dc.Graphics.FillRectangle(brush, rect2);
+            }
+            dc.Graphics.SmoothingMode = prevMode;
+        }
     }
 }

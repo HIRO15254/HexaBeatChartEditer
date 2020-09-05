@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ched.Core.Notes
+namespace HexaBeatChartEditer.Core.Notes
 {
     public abstract class TapBase : ShortNoteBase
     {
@@ -20,6 +20,17 @@ namespace Ched.Core.Notes
         [Newtonsoft.Json.JsonProperty]
         private int width = 1;
 
+        public override string ToString() => $"{tick}:{laneIndex}";
+
+        public override bool Equals(object obj)
+        {
+            var p = obj as TappableBase;
+            if (p == null)
+                return false;
+            return (this.tick == p.tick && this.laneIndex == p.laneIndex);
+        }
+
+        public override int GetHashCode() => tick.GetHashCode() ^ laneIndex.GetHashCode();
         /// <summary>
         /// ノートの位置を表すTickを設定します。
         /// </summary>
