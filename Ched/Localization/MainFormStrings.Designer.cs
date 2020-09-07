@@ -448,6 +448,15 @@ namespace HexaBeatChartEditer.Localization {
         }
         
         /// <summary>
+        ///   レーン分割 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string SplitLane {
+            get {
+                return ResourceManager.GetString("SplitLane", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   停止 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string Stop {

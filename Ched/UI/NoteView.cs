@@ -1229,6 +1229,30 @@ namespace HexaBeatChartEditer.UI
                         pe.Graphics.DrawString(string.Format("x{0: 0.00;-0.00}", item.SpeedRatio), font, highSpeedBrush, point);
                     }
                 }
+
+                // レーン分裂描画
+                using (var splitLaneBrush = new Pen(Color.FromArgb(216, 0, 216),1))
+                {
+                    bool[] vs = new bool[6];
+                    float[] starts = new float[6];
+                    ScoreEvents.SplitLaneEvents.Sort((a,b) => a.Tick - b.Tick);
+                    foreach (var item in ScoreEvents.SplitLaneEvents)
+                    {
+                        pe.Graphics.DrawLine(splitLaneBrush, 0, -GetYPositionFromTick(item.Tick), (UnitLaneWidth + BorderThickness)*6, -GetYPositionFromTick(item.Tick));
+                        for (int i = 0; i < 6; i++)
+                        {
+                            if(vs[i] != item.Lane[i])
+                            {
+                                if (item.Lane[i])
+                                    starts[i] = -GetYPositionFromTick(item.Tick);
+                                else
+                                    pe.Graphics.DrawLine(splitLaneBrush, (UnitLaneWidth + BorderThickness) * (i + 0.5f), starts[i], (UnitLaneWidth + BorderThickness) * (i + 0.5f), -GetYPositionFromTick(item.Tick));
+                            }
+                            vs[i] = item.Lane[i];
+                        }
+                    }
+                }
+
             }
 
             pe.Graphics.Transform = prevMatrix;

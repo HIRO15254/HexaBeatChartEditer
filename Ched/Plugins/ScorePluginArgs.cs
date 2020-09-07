@@ -32,6 +32,7 @@ namespace HexaBeatChartEditer.Plugins
             CheckEventDuplicate(score.Events.BPMChangeEvents);
             CheckEventDuplicate(score.Events.TimeSignatureChangeEvents);
             CheckEventDuplicate(score.Events.HighSpeedChangeEvents);
+            CheckEventDuplicate(score.Events.SplitLaneEvents);
             updateScoreAction(score);
         }
 

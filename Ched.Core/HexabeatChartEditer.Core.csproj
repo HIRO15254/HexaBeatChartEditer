@@ -68,6 +68,7 @@
     <Compile Include="Events\BPMChangeEvent.cs" />
     <Compile Include="Events\EventBase.cs" />
     <Compile Include="Events\HighSpeedChangeEvent.cs" />
+    <Compile Include="Events\SplitLaneEvent.cs" />
     <Compile Include="Events\TimeSignatureChangeEvent.cs" />
     <Compile Include="NoteCollection.cs" />
     <Compile Include="Notes\Hold\DHold.cs" />

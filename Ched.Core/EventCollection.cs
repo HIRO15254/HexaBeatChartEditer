@@ -20,6 +20,8 @@ namespace HexaBeatChartEditer.Core
         private List<TimeSignatureChangeEvent> timeSignatureChangeEvents = new List<TimeSignatureChangeEvent>();
         [Newtonsoft.Json.JsonProperty]
         private List<HighSpeedChangeEvent> highSpeedChangeEvents = new List<HighSpeedChangeEvent>();
+        [Newtonsoft.Json.JsonProperty]
+        private List<SplitLaneEvent> splitLaneEvents = new List<SplitLaneEvent>();
 
         public List<BPMChangeEvent> BPMChangeEvents
         {
@@ -39,11 +41,18 @@ namespace HexaBeatChartEditer.Core
             set { highSpeedChangeEvents = value; }
         }
 
+        public List<SplitLaneEvent> SplitLaneEvents
+        {
+            get { return splitLaneEvents; }
+            set { splitLaneEvents = value; }
+        }
+
         public void UpdateTicksPerBeat(double factor)
         {
             var events = BPMChangeEvents.Cast<EventBase>()
                  .Concat(TimeSignatureChangeEvents)
-                 .Concat(HighSpeedChangeEvents);
+                 .Concat(HighSpeedChangeEvents)
+                 .Concat(SplitLaneEvents);
             foreach (var e in events)
                 e.Tick = (int)(e.Tick * factor);
         }

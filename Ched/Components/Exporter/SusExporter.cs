@@ -102,6 +102,13 @@ namespace HexaBeatChartEditer.Components.Exporter
                     writer.WriteLine(EventVar.SpeedRatio);
                 }
 
+                foreach (var EventVar in book.Score.Events.SplitLaneEvents)
+                {
+                    var barPos = barIndexCalculator.GetBarPositionFromTick(EventVar.Tick);
+                    writer.Write("#{0:000}05: ", barPos.BarIndex);
+                    writer.WriteLine(EventVar.ToString().ToCharArray());
+                }
+
                 writer.WriteLine();
 
                 var shortNotes = notes.Taps.Cast<TappableBase>().Select(p => new { Type = '1', Note = p })

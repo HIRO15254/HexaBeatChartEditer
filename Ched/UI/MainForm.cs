@@ -256,6 +256,9 @@ namespace HexaBeatChartEditer.UI
             events.BPMChangeEvents.Add(new BPMChangeEvent() { Tick = 0, BPM = 120 });
             events.TimeSignatureChangeEvents.Add(new TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2 });
             events.HighSpeedChangeEvents.Add(new HighSpeedChangeEvent() { Tick = 0, SpeedRatio = (decimal)1.00 });
+            bool[] vs = { false, false, false, false, false, false };
+            events.SplitLaneEvents.Add(new SplitLaneEvent() { Tick = 0, Lane = vs });
+            events.SplitLaneEvents.Add(new SplitLaneEvent() { Tick = 100000, Lane = vs });
             LoadBook(book);
         }
 
@@ -443,6 +446,12 @@ namespace HexaBeatChartEditer.UI
                     return new RemoveEventOperation<TimeSignatureChangeEvent>(events.TimeSignatureChangeEvents, p);
                 }).ToList();
 
+                var splitOp = events.SplitLaneEvents.Where(p => isContained(p)).ToList().Select(p =>
+                {
+                    ScoreBook.Score.Events.SplitLaneEvents.Remove(p);
+                    return new RemoveEventOperation<SplitLaneEvent>(events.SplitLaneEvents, p);
+                }).ToList();
+
                 OperationManager.Push(new CompositeOperation("イベント削除", bpmOp.Cast<IOperation>().Concat(speedOp).Concat(signatureOp)));
                 noteView.Invalidate();
             });
@@ -615,7 +624,35 @@ namespace HexaBeatChartEditer.UI
                 noteView.Invalidate();
             });
 
-            var insertMenuItems = new MenuItem[] { insertBPMItem, insertHighSpeedItem, insertTimeSignatureItem };
+            var insertSplitLaneItem = new MenuItem(MainFormStrings.SplitLane, (s, e) =>
+            {
+                var form = new SplitLaneForm();
+                if (form.ShowDialog(this) != DialogResult.OK) return;
+
+                var prev = noteView.ScoreEvents.SplitLaneEvents.SingleOrDefault(p => p.Tick == noteView.SelectedRange.StartTick);
+                var item = new SplitLaneEvent()
+                {
+                    Tick = noteView.SelectedRange.StartTick,
+                    Lane = form.Lane
+                };
+
+                var insertOp = new InsertEventOperation<SplitLaneEvent>(noteView.ScoreEvents.SplitLaneEvents, item);
+                if (prev != null)
+                {
+                    noteView.ScoreEvents.SplitLaneEvents.Remove(prev);
+                    var removeOp = new RemoveEventOperation<SplitLaneEvent>(noteView.ScoreEvents.SplitLaneEvents, prev);
+                    OperationManager.Push(new CompositeOperation(insertOp.Description, new IOperation[] { removeOp, insertOp }));
+                }
+                else
+                {
+                    OperationManager.Push(insertOp);
+                }
+
+                noteView.ScoreEvents.SplitLaneEvents.Add(item);
+                noteView.Invalidate();
+            });
+
+            var insertMenuItems = new MenuItem[] { insertBPMItem, insertHighSpeedItem, insertTimeSignatureItem, insertSplitLaneItem };
 
             var isAbortAtLastNoteItem = new MenuItem(MainFormStrings.AbortAtLastNote, (s, e) =>
             {

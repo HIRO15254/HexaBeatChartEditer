@@ -12,6 +12,7 @@ namespace HexaBeatChartEditer.Core.Events
     [Newtonsoft.Json.JsonObject(Newtonsoft.Json.MemberSerialization.OptIn)]
     public abstract class EventBase
     {
+
         [Newtonsoft.Json.JsonProperty]
         private int tick;
 

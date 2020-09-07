@@ -228,6 +228,12 @@
     <Compile Include="UI\SoundSourceSelector.Designer.cs">
       <DependentUpon>SoundSourceSelector.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\SplitLaneForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\SplitLaneForm.Designer.cs">
+      <DependentUpon>SplitLaneForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\TimeSignatureSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -322,6 +328,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\SoundSourceSelector.resx">
       <DependentUpon>SoundSourceSelector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\SplitLaneForm.resx">
+      <DependentUpon>SplitLaneForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\TimeSignatureSelectionForm.en.resx">
       <DependentUpon>TimeSignatureSelectionForm.cs</DependentUpon>

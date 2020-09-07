@@ -270,4 +270,7 @@
   <data name="Refresh" xml:space="preserve">
     <value>Refresh</value>
   </data>
+  <data name="SplitLane" xml:space="preserve">
+    <value>Split Lane</value>
+  </data>
 </root>
