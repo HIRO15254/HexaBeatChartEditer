@@ -14,15 +14,13 @@ Windows用音楽ゲーム｢Hexabeat｣用の譜面エディターです。
 
 ## ダウンロード
 
-現在の最新版は[v1.0.0](https://github.com/paralleltree/Ched/releases)です。
+現在の最新版は[v1.0.0](https://github.com/HIRO15254/HexabeatChartEditer/releases)です。
 
 ## 使い方
 
 基本的な使い方はChedとほぼ同じです。
 
-自分でWikiを立てるのに時間がかかりそうなので、暫定的にChedさんの[Wiki](https://github.com/paralleltree/Ched/wiki)を参照してください。
-
-(SlideとAir系のノーツがない以外の相違点はほぼありません)
+相違点については本体付属のReadmeをご覧ください
 
 ## フィードバックについて
 バグ報告などは[@hiro15254](https://twitter.com/hiro15254)までお願いします。
